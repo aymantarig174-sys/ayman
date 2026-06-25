@@ -1078,3 +1078,49 @@ document.addEventListener('DOMContentLoaded', () => {
   syncPaymentStatusFromUrl();
   updateMapPreview();
 });
+
+// ===== CART FIX (minimal safe patch) =====
+function addToCart(item) {
+  const items = cart();
+  const existing = items.find(i => i.id === item.id && i.option === item.option);
+  if (existing) {
+    existing.quantity = (existing.quantity || 1) + (item.quantity || 1);
+  } else {
+    items.push({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      option: item.option || 'default',
+      quantity: item.quantity || 1
+    });
+  }
+  saveCart(items);
+  toast('تمت إضافة المنتج للسلة');
+}
+
+function renderCart() {
+  const container = document.querySelector('[data-cart-items]');
+  if (!container) return;
+
+  const items = cart();
+  if (!items.length) {
+    container.innerHTML = '<p>السلة فارغة</p>';
+    return;
+  }
+
+  container.innerHTML = items.map(item => `
+    <div class="cart-item">
+      <img src="${item.image || ''}" alt="">
+      <div>
+        <h4>${item.name}</h4>
+        <p>${item.option || ''}</p>
+        <p>${item.price} ريال × ${item.quantity}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+// auto render
+document.addEventListener('DOMContentLoaded', renderCart);
+// ===== END CART FIX =====
