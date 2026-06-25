@@ -1,4 +1,4 @@
-﻿const API_BASE = /^(localhost|127\.0\.0\.1)$/i.test(location.hostname) ? '' : 'https://gamezoom-54hb.onrender.com';
+const API_BASE = /^(localhost|127\.0\.0\.1)$/i.test(location.hostname) ? '' : 'https://gamezoom-54hb.onrender.com';
 const CART_KEY = 'khatafah_cart';
 const REVIEW_KEY = 'khatafah_reviews';
 const BUSINESS_PLATFORM_URL = 'https://eauthenticate.saudibusiness.gov.sa/certificate-details/0000296352';
@@ -86,7 +86,7 @@ const PRODUCT_CATALOG = {
   },
   tvLighting: {
     id: 'tv-lighting',
-    name: 'اضاءة التلفزيون التفاعلية',
+    name: 'الإنارة التفاعلية',
     image: 'assets/tv-lighting-cover.jpeg',
     coverImage: 'assets/tv-lighting-cover.jpeg',
     page: 'tv-lighting.html',
@@ -94,9 +94,9 @@ const PRODUCT_CATALOG = {
     price: 159,
     options: [],
     gallery: [
-      { type: 'video', src: 'assets/tv-lighting-demo.mp4', poster: 'assets/tv-lighting-cover.jpeg', alt: 'فيديو اضاءة التلفزيون التفاعلية', label: 'فيديو توضيحي' }
+      { type: 'video', src: 'assets/tv-lighting-demo.mp4', poster: 'assets/tv-lighting-cover.jpeg', alt: 'فيديو الإنارة التفاعلية', label: 'فيديو توضيحي' }
     ],
-    searchKeywords: ['تلفزيون', 'إضاءة التلفزيون', 'تفاعلية', 'خلفية', 'RGB', 'LED', 'شاشة']
+    searchKeywords: ['تلفزيون', 'الإنارة التفاعلية', 'تفاعلية', 'خلفية', 'RGB', 'LED', 'شاشة']
   }
 };
 const DEFAULT_PRODUCT_KEY = 'starProjector';
@@ -854,6 +854,7 @@ function locateCustomer() {
   }, () => {
     qs('[data-location-status]').textContent = 'لم نستطع تحديد الموقع. اختره من الخريطة.';
     toast('اسمح للموقع باستخدام GPS أو اختر من الخريطة');
+  });
 }
 async function checkout(event) {
   event.preventDefault();

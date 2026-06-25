@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="إتمام الطلب والدفع - فاستور">
-  <title>الدفع | فاستور</title>
+  <meta name="description" content="إتمام الطلب والدفع - خطفة ستور">
+  <title>الدفع | خطفة ستور</title>
   <link rel="icon" href="assets/kh-header-logo.png">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -20,15 +20,15 @@
     </button>
     
     <a href="index.html" class="header-logo">
-      <img src="assets/kh-header-logo.png" alt="فاستور">
-      <span>Fastor</span>
+      <img src="assets/kh-header-logo.png" alt="خطفة ستور">
+      <span>خطفة ستور</span>
     </a>
     
     <nav class="header-nav" data-nav>
       <a href="index.html">الرئيسية</a>
       <a href="products.html">المنتجات</a>
       <a href="ai-subscriptions.html">الاشتراكات</a>
-      <a href="about.html">من نحن</a>
+      <a href="cart.html">السلة</a>
     </nav>
     
     <div class="header-actions">
@@ -181,8 +181,8 @@
             </div>
             
             <div style="display:flex;justify-content:space-between;padding:8px 0">
-              <span class="text-secondary">الضريبة (15%)</span>
-              <strong data-tax-amount>0 ريال</strong>
+              <span class="text-secondary">الضريبة</span>
+              <strong data-tax-amount>مشمولة ضمن السعر</strong>
             </div>
             
             <div style="display:flex;justify-content:space-between;padding:16px 0;margin-top:12px;border-top:2px solid var(--border);font-size:1.3rem">
@@ -222,15 +222,11 @@
 // Calculate tax and grand total
 function updateTotals() {
   const items = getCart();
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.15;
-  const grandTotal = subtotal + tax;
-  
+  const subtotal = items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
   const taxEl = document.querySelector('[data-tax-amount]');
   const grandTotalEl = document.querySelector('[data-grand-total]');
-  
-  if (taxEl) taxEl.textContent = money(tax);
-  if (grandTotalEl) grandTotalEl.textContent = money(grandTotal);
+  if (taxEl) taxEl.textContent = 'مشمولة ضمن السعر';
+  if (grandTotalEl) grandTotalEl.textContent = money(subtotal);
 }
 
 // Payment method styling
