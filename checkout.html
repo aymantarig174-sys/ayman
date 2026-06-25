@@ -252,7 +252,7 @@ document.querySelectorAll('.payment-method').forEach(label => {
 });
 
 // Form submission
-document.getElementById('checkout-form').addEventListener('submit', (e) => {
+document.getElementById('checkout-form').addEventListener('legacy-submit-disabled', (e) => {
   e.preventDefault();
   
   const formData = new FormData(e.target);
@@ -271,6 +271,141 @@ document.getElementById('checkout-form').addEventListener('submit', (e) => {
       window.location.href = 'index.html';
     }, 2000);
   }, 2000);
+});
+
+const CHECKOUT_API_BASE = /^(localhost|127\.0\.0\.1)$/i.test(location.hostname) ? '' : 'https://gamezoom-54hb.onrender.com';
+
+function checkoutMapsUrl(data) {
+  const address = [
+    data.short_address,
+    data.city,
+    data.district,
+    data.address_details
+  ].filter(Boolean).join(' ');
+  return address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : '';
+}
+
+function loadGeideaCheckoutScript(src) {
+  const scripts = [
+    src,
+    'https://www.ksamerchant.geidea.net/hpp/geideaCheckout.min.js',
+    'https://www.merchant.geidea.net/hpp/geideaCheckout.min.js',
+    'https://www.merchant.geidea.ae/hpp/geideaCheckout.min.js'
+  ].filter(Boolean);
+
+  return new Promise((resolve, reject) => {
+    if (window.GeideaCheckout) return resolve();
+
+    const loadAt = index => {
+      const scriptUrl = scripts[index];
+      if (!scriptUrl) {
+        reject(new Error('تعذر تحميل بوابة الدفع'));
+        return;
+      }
+
+      const existing = document.querySelector('script[data-geidea-checkout]');
+      if (existing) existing.remove();
+
+      const script = document.createElement('script');
+      script.src = scriptUrl;
+      script.async = true;
+      script.dataset.geideaCheckout = 'true';
+      script.onload = () => window.GeideaCheckout ? resolve() : loadAt(index + 1);
+      script.onerror = () => loadAt(index + 1);
+      document.head.appendChild(script);
+    };
+
+    loadAt(0);
+  });
+}
+
+async function startGeideaPayment(result, submitButton, originalText) {
+  await loadGeideaCheckoutScript(result.checkoutScript);
+  if (!window.GeideaCheckout) throw new Error('بوابة الدفع غير متاحة الآن');
+
+  const payment = new window.GeideaCheckout(async paymentResult => {
+    await fetch(`${CHECKOUT_API_BASE}/api/geidea/checkout-result`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...paymentResult, sessionId: result.sessionId, orderNumber: result.order_number })
+    }).catch(() => {});
+
+    localStorage.removeItem(CART_KEY);
+    updateCartCount();
+    renderCart();
+    toast('تم الدفع بنجاح');
+    window.location.href = `index.html?payment=success&order=${encodeURIComponent(result.order_number || '')}`;
+  }, error => {
+    toast(`خطأ في الدفع: ${error?.responseMessage || error?.message || 'تعذر إكمال الدفع'}`);
+    submitButton.disabled = false;
+    submitButton.textContent = originalText;
+  }, () => {
+    toast('تم إلغاء الدفع');
+    submitButton.disabled = false;
+    submitButton.textContent = originalText;
+  });
+
+  payment.startPayment(result.sessionId);
+}
+
+document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const items = getCart();
+  if (!items.length) {
+    toast('السلة فارغة، أضف منتجاً قبل الدفع');
+    return;
+  }
+
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
+  const submitButton = e.target.querySelector('button[type="submit"]');
+  const originalText = submitButton.textContent;
+  const subtotal = items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
+  const mapsUrl = checkoutMapsUrl(data);
+  const addressNotes = [data.city, data.district, data.address_details, data.order_notes].filter(Boolean).join(' - ');
+
+  const enrichedItems = items.map(item => ({
+    ...item,
+    delivery: {
+      short_address: data.short_address,
+      address_notes: addressNotes,
+      maps_url: mapsUrl
+    }
+  }));
+
+  try {
+    submitButton.disabled = true;
+    submitButton.textContent = 'جاري تجهيز الدفع...';
+    toast('جاري تجهيز بوابة الدفع...');
+
+    const response = await fetch(`${CHECKOUT_API_BASE}/api/shop-orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer_name: data.customer_name,
+        customer_phone: data.customer_phone,
+        customer_email: data.customer_email,
+        short_address: data.short_address,
+        address_notes: addressNotes,
+        maps_url: mapsUrl,
+        items: enrichedItems,
+        total: subtotal,
+        returnUrl: `${location.origin}${location.pathname}?payment=return`
+      })
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'تعذر تجهيز الدفع');
+    }
+
+    await startGeideaPayment(result, submitButton, originalText);
+  } catch (error) {
+    toast(`خطأ: ${error.message || 'تعذر إتمام الدفع'}`);
+    submitButton.disabled = false;
+    submitButton.textContent = originalText;
+  }
 });
 
 document.addEventListener('DOMContentLoaded', updateTotals);
