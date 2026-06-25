@@ -463,6 +463,14 @@ h1 { font-size: clamp(2.5rem, 8vw, 5.5rem); line-height: 1.06; letter-spacing: 0
   font-size: .88rem;
   font-weight: 800;
 }
+.kh-swipe-tip {
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: .92rem;
+  font-weight: 700;
+  opacity: .9;
+}
 .kh-gallery { display: none; }
 .kh-product-info {
   padding: 28px;
