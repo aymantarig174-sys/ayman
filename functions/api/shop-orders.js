@@ -118,6 +118,18 @@ export async function onRequestPost({ request, env }) {
       }).filter(([, value]) => value)),
       order: {
         description: orderDescription(orderNumber)
+      },
+      metadata: {
+        custom: {
+          customer_name: clean(body.customer_name || ''),
+          customer_phone: clean(body.customer_phone || ''),
+          customer_email: clean(body.customer_email || ''),
+          short_address: clean(body.short_address || ''),
+          address_details: clean(body.address_notes || ''),
+          maps_url: clean(body.maps_url || ''),
+          total: String(amount),
+          products: Array.isArray(body.items) ? body.items.map(item => clean(item.name || '')).filter(Boolean).join(', ') : ''
+        }
       }
     };
 

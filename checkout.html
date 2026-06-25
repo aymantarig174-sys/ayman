@@ -274,15 +274,106 @@ document.getElementById('checkout-form').addEventListener('legacy-submit-disable
 });
 
 const CHECKOUT_API_BASE = '';
+const CHECKOUT_FORM_KEY = 'khatafah_checkout_details';
 
+function saveCheckoutDetails(form = document.getElementById('checkout-form')) {
+  if (!form) return;
+  const data = Object.fromEntries(new FormData(form).entries());
+  localStorage.setItem(CHECKOUT_FORM_KEY, JSON.stringify(data));
+}
+
+function restoreCheckoutDetails(form = document.getElementById('checkout-form')) {
+  if (!form) return;
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(CHECKOUT_FORM_KEY) || '{}'); } catch {}
+  Object.entries(saved).forEach(([name, value]) => {
+    const field = form.elements[name];
+    if (!field) return;
+    if (field.type === 'checkbox' || field.type === 'radio') field.checked = value === 'on' || value === true || field.value === value;
+    else field.value = value;
+  });
+  if (saved.maps_url) {
+    const frame = document.querySelector('[data-google-map-frame]');
+    const link = document.querySelector('[data-open-map]');
+    const status = document.querySelector('[data-map-status]');
+    if (frame) frame.src = `${saved.maps_url}&output=embed`;
+    if (link) link.href = saved.maps_url;
+    if (status) status.textContent = 'تم استرجاع رابط Google Maps المحفوظ.';
+  }
+}
+
+function removeInlinePaymentMethods() {
+  const firstMethod = document.querySelector('.payment-method');
+  const wrapper = firstMethod?.closest('div[style*="margin:28px"]');
+  if (wrapper) wrapper.remove();
+}
+
+function installGoogleMapsLocationTools() {
+  const form = document.getElementById('checkout-form');
+  if (!form || form.querySelector('[data-google-location-box]')) return;
+  const addressDetails = form.elements.address_details?.closest('.form-group');
+  const box = document.createElement('div');
+  box.className = 'form-group';
+  box.dataset.googleLocationBox = 'true';
+  box.innerHTML = `
+    <label>موقع Google Maps *</label>
+    <input type="hidden" name="maps_url">
+    <input type="hidden" name="location_lat">
+    <input type="hidden" name="location_lng">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <button type="button" class="btn btn-secondary" data-locate-now>حدد موقعي الآن</button>
+      <a href="https://www.google.com/maps" target="_blank" rel="noopener" class="btn btn-ghost" data-open-map>فتح Google Maps</a>
+    </div>
+    <iframe data-google-map-frame title="Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade" style="width:100%;height:240px;border:1px solid var(--border);border-radius:var(--radius);background:#111" src="https://www.google.com/maps?q=Saudi%20Arabia&output=embed"></iframe>
+    <p class="text-xs text-secondary" data-map-status style="margin-top:8px">اضغط زر حدد موقعي الآن لتسجيل رابط موقعك في Google Maps.</p>
+  `;
+  addressDetails?.after(box);
+
+  const locateButton = box.querySelector('[data-locate-now]');
+  const status = box.querySelector('[data-map-status]');
+  const mapFrame = box.querySelector('[data-google-map-frame]');
+  const mapLink = box.querySelector('[data-open-map]');
+  locateButton.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      status.textContent = 'المتصفح لا يدعم تحديد الموقع.';
+      return;
+    }
+    status.textContent = 'جاري تحديد موقعك عبر Google Maps...';
+    navigator.geolocation.getCurrentPosition(position => {
+      const lat = position.coords.latitude.toFixed(6);
+      const lng = position.coords.longitude.toFixed(6);
+      const url = `https://www.google.com/maps?q=${lat},${lng}`;
+      form.elements.location_lat.value = lat;
+      form.elements.location_lng.value = lng;
+      form.elements.maps_url.value = url;
+      mapFrame.src = `${url}&output=embed`;
+      mapLink.href = url;
+      status.textContent = 'تم تحديد موقعك وحفظ رابط Google Maps.';
+      saveCheckoutDetails(form);
+    }, () => {
+      status.textContent = 'تعذر تحديد الموقع. اسمح للمتصفح باستخدام الموقع ثم حاول مرة أخرى.';
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
+  });
+}
+
+function buildInvoicePayload(data, items, subtotal, mapsUrl) {
+  return {
+    customer_name: data.customer_name,
+    customer_phone: data.customer_phone,
+    customer_email: data.customer_email,
+    short_address: data.short_address,
+    city: data.city,
+    district: data.district,
+    address_details: data.address_details,
+    products: items.map(item => ({ name: item.name, quantity: Number(item.quantity || 1) })),
+    total: money(subtotal),
+    maps_url: mapsUrl
+  };
+}
 function checkoutMapsUrl(data) {
-  const address = [
-    data.short_address,
-    data.city,
-    data.district,
-    data.address_details
-  ].filter(Boolean).join(' ');
-  return address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : '';
+  if (data.maps_url) return data.maps_url;
+  if (data.location_lat && data.location_lng) return `https://www.google.com/maps?q=${data.location_lat},${data.location_lng}`;
+  return '';
 }
 
 function loadGeideaCheckoutScript(src) {
@@ -319,7 +410,7 @@ function loadGeideaCheckoutScript(src) {
   });
 }
 
-async function startGeideaPayment(result, submitButton, originalText) {
+async function startGeideaPayment(result, submitButton, originalText, invoice) {
   await loadGeideaCheckoutScript(result.checkoutScript);
   if (!window.GeideaCheckout) throw new Error('بوابة الدفع غير متاحة الآن');
 
@@ -327,10 +418,10 @@ async function startGeideaPayment(result, submitButton, originalText) {
     await fetch(`${CHECKOUT_API_BASE}/api/geidea/checkout-result`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...paymentResult, sessionId: result.sessionId, orderNumber: result.order_number })
+      body: JSON.stringify({ ...paymentResult, sessionId: result.sessionId, orderNumber: result.order_number, invoice })
     }).catch(() => {});
 
-    localStorage.removeItem(CART_KEY);
+    saveCheckoutDetails();
     updateCartCount();
     renderCart();
     toast('تم الدفع بنجاح');
@@ -363,6 +454,11 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
   const originalText = submitButton.textContent;
   const subtotal = items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
   const mapsUrl = checkoutMapsUrl(data);
+  if (!mapsUrl) {
+    toast('حدد موقعك عبر Google Maps قبل الدفع');
+    return;
+  }
+  const invoicePayload = buildInvoicePayload(data, items, subtotal, mapsUrl);
   const addressNotes = [data.city, data.district, data.address_details, data.order_notes].filter(Boolean).join(' - ');
 
   const enrichedItems = items.map(item => ({
@@ -400,7 +496,7 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
       throw new Error(result.error || 'تعذر تجهيز الدفع');
     }
 
-    await startGeideaPayment(result, submitButton, originalText);
+    await startGeideaPayment(result, submitButton, originalText, invoicePayload);
   } catch (error) {
     toast(`خطأ: ${error.message || 'تعذر إتمام الدفع'}`);
     submitButton.disabled = false;
@@ -408,7 +504,14 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
   }
 });
 
-document.addEventListener('DOMContentLoaded', updateTotals);
+document.addEventListener('DOMContentLoaded', () => {
+  removeInlinePaymentMethods();
+  installGoogleMapsLocationTools();
+  restoreCheckoutDetails();
+  document.getElementById('checkout-form')?.addEventListener('input', event => saveCheckoutDetails(event.currentTarget));
+  document.getElementById('checkout-form')?.addEventListener('change', event => saveCheckoutDetails(event.currentTarget));
+  updateTotals();
+});
 </script>
 
 </body>
