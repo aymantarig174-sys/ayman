@@ -1,4 +1,4 @@
-const API_BASE = /^(localhost|127\.0\.0\.1)$/i.test(location.hostname) ? '' : 'https://gamezoom-54hb.onrender.com';
+const API_BASE = '';
 const CART_KEY = 'khatafah_cart';
 const REVIEW_KEY = 'khatafah_reviews';
 const BUSINESS_PLATFORM_URL = 'https://eauthenticate.saudibusiness.gov.sa/certificate-details/0000296352';
