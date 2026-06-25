@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="سلة التسوق - فاستور">
+  <title>السلة | فاستور</title>
+  <link rel="icon" href="assets/kh-header-logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="shell header-row">
+    <button class="mobile-toggle" data-menu-toggle aria-label="فتح القائمة">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    
+    <a href="index.html" class="header-logo">
+      <img src="assets/kh-header-logo.png" alt="فاستور">
+      <span>Fastor</span>
+    </a>
+    
+    <nav class="header-nav" data-nav>
+      <a href="index.html">الرئيسية</a>
+      <a href="products.html">المنتجات</a>
+      <a href="ai-subscriptions.html">الاشتراكات</a>
+      <a href="about.html">من نحن</a>
+    </nav>
+    
+    <div class="header-actions">
+      <a href="https://wa.me/message/WO2BHOEL77CGM1" class="header-btn" target="_blank" rel="noopener" aria-label="واتساب">
+        💬
+      </a>
+      <a href="cart.html" class="header-btn" aria-label="السلة">
+        🛒
+        <span class="cart-badge" data-cart-count style="display:none">0</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- Page Header -->
+<section class="page-header">
+  <div class="shell">
+    <div class="breadcrumb">
+      <a href="index.html">الرئيسية</a>
+      <span>/</span>
+      <span>السلة</span>
+    </div>
+    <h1>سلة التسوق</h1>
+    <p>راجع منتجاتك المختارة قبل إتمام الطلب</p>
+  </div>
+</section>
+
+<!-- Cart Content -->
+<section class="section">
+  <div class="shell">
+    <div class="grid-2">
+      <!-- Cart Items -->
+      <div style="grid-column: 1 / -1;">
+        <div class="card">
+          <h2 style="margin-bottom:24px;font-size:1.5rem">المنتجات المضافة</h2>
+          <div data-cart-items>
+            <!-- Cart items will be rendered by JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Order Summary -->
+      <div style="grid-column: 1 / -1;">
+        <div class="card" style="background:var(--bg-soft);position:sticky;top:100px">
+          <h3 style="margin-bottom:20px;font-size:1.2rem">ملخص الطلب</h3>
+          
+          <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+            <span class="text-secondary">المجموع الفرعي</span>
+            <strong data-cart-total>0 ريال</strong>
+          </div>
+          
+          <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+            <span class="text-secondary">الشحن</span>
+            <span class="text-secondary">يحسب عند الدفع</span>
+          </div>
+          
+          <div style="display:flex;justify-content:space-between;padding:16px 0;font-size:1.2rem">
+            <strong>المجموع الكلي</strong>
+            <strong data-cart-total>0 ريال</strong>
+          </div>
+          
+          <a href="checkout.html" class="btn btn-primary btn-block btn-lg" style="margin-top:20px">
+            متابعة إلى الدفع
+          </a>
+          
+          <a href="products.html" class="btn btn-ghost btn-block" style="margin-top:12px">
+            متابعة التسوق
+          </a>
+          
+          <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border)">
+            <p class="text-xs" style="text-align:center;line-height:1.8">
+              <strong>ضمان الدفع الآمن</strong><br>
+              جميع المعاملات محمية بتشفير SSL
+            </p>
+            <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap">
+              <img src="assets/payment-icons/mada.png" alt="mada" style="height:24px;background:white;padding:4px 8px;border-radius:4px">
+              <img src="assets/payment-icons/visa.png" alt="visa" style="height:24px;background:white;padding:4px 8px;border-radius:4px">
+              <img src="assets/payment-icons/mastercard.png" alt="mastercard" style="height:24px;background:white;padding:4px 8px;border-radius:4px">
+              <img src="assets/payment-icons/apple-pay.png" alt="apple pay" style="height:24px;background:white;padding:4px 8px;border-radius:4px">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Strip -->
+<section class="section" style="background:var(--bg-soft)">
+  <div class="shell">
+    <div class="features-strip">
+      <div class="feature-item">
+        <span class="feature-icon">🚚</span>
+        <h4>شحن سريع</h4>
+        <p>توصيل خلال 7-14 يوم</p>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">💳</span>
+        <h4>دفع آمن</h4>
+        <p>بوابة Geidea المعتمدة</p>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">↩️</span>
+        <h4>إرجاع مجاني</h4>
+        <p>خلال 7 أيام من الاستلام</p>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">📞</span>
+        <h4>دعم 24/7</h4>
+        <p>فريق الدعم جاهز دائماً</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WhatsApp FAB -->
+<a href="https://wa.me/message/WO2BHOEL77CGM1" class="fab" target="_blank" rel="noopener" aria-label="تواصل عبر واتساب">
+  💬
+</a>
+
+<!-- Toast Notification -->
+<div class="toast" data-toast></div>
+
+<!-- Footer -->
+<footer class="footer" data-footer>
+  <!-- Footer will be rendered by JavaScript -->
+</footer>
+
+<script src="app.js"></script>
+
+</body>
+</html>

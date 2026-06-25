@@ -1,0 +1,8 @@
+﻿User-agent: *
+Allow: /
+
+Sitemap: https://khatafa.store/sitemap.xml
+
+User-agent: *
+Disallow: /admin/
+Disallow: /api/

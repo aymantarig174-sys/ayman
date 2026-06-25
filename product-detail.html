@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="اضاءة النجوم والمجرات من خطفة ستور مع تحديد موقع التوصيل والدفع الآمن.">
+  <title>اضاءة النجوم والمجرات | خطفة ستور</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="store.css">
+  <link rel="icon" href="assets/khatafah-wordmark.png">
+</head>
+<body class="kh-body" data-page="product">  <header class="kh-header">
+    <div class="kh-shell kh-header-row">
+      <button class="kh-icon-btn" type="button" data-open-menu aria-label="فتح القائمة"><span></span><span></span><span></span></button>
+      <a class="kh-brand" href="index.html" aria-label="خطفة الرئيسية"><img src="assets/kh-header-logo.png" alt="خطفة"></a>
+      <button class="kh-cart-btn" type="button" data-open-cart aria-label="السلة"><span aria-hidden="true">🛒</span><strong data-cart-count>0</strong></button>
+    </div>
+  </header>
+  <aside class="kh-menu" data-menu>
+    <button class="kh-close" type="button" data-close-menu>إغلاق</button>
+    <img src="assets/khatafah-wordmark.png" alt="خطفة" class="kh-menu-logo">
+    <nav>
+      <a href="index.html">الرئيسية</a>
+      <a href="product.html">اضاءة النجوم والمجرات</a>
+      <a href="cart.html">السلة</a>
+    </nav>
+  </aside>
+  <div class="kh-backdrop" data-backdrop></div>  <main>
+    <section class="kh-product-hero">
+      <div class="kh-shell">
+        <div class="kh-product-title">
+          <span class="kh-kicker">الأكثر طلباً</span>
+          <h1>اضاءة النجوم والمجرات</h1>
+          <p>حوّل أي غرفة إلى عالم من النجوم خلال ثوان. إضاءة هادئة، تأثير واقعي، وتشغيل USB مناسب للنوم والاسترخاء والتصوير.</p>
+        </div>
+        <div class="kh-product-grid">
+          <div class="kh-product-media">
+            <img src="assets/star-discs-24.jpg" alt="اضاءة النجوم والمجرات" data-main-product-image>
+            <div class="kh-choice-layout">
+              <div class="kh-options" data-options></div>
+            </div>
+          </div>
+          <div class="kh-product-info">
+            <p class="kh-product-copy">اختر تركيبة الأقراص المناسبة لك، ثم حدّد الكمية قبل الإضافة للسلة أو الشراء مباشرة.</p>
+            <ul class="kh-feature-list"><li>جودة عرض مذهلة وتأثير واقعي</li><li>أجواء هادئة ومريحة</li><li>تشغيل سهل عبر USB</li><li>كلما زاد عدد الأقراص زادت المناظر</li></ul>
+            <div class="kh-product-price">
+              <div>
+                <span class="kh-small-label">السعر</span>
+                <strong class="kh-live-price" data-live-price>156 ريال</strong>
+              </div>
+            </div>
+            <div class="kh-quantity-row">
+              <div>
+                <span class="kh-small-label">الكمية</span>
+                <div class="kh-quantity-control" aria-label="تحديد كمية المنتج">
+                  <button class="kh-quantity-btn" type="button" data-quantity-minus aria-label="تقليل الكمية">−</button>
+                  <strong class="kh-quantity-value" data-quantity-value>1</strong>
+                  <button class="kh-quantity-btn" type="button" data-quantity-plus aria-label="زيادة الكمية">+</button>
+                </div>
+              </div>
+            </div>
+            <div class="kh-product-actions">
+              <button class="kh-primary" type="button" data-add-main>إضافة للسلة</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="kh-section kh-checkout-band" id="checkout">
+      <div class="kh-shell kh-checkout-grid">
+          <div class="kh-checkout-copy"><span>قبل الدفع</span><h2>بيانات التوصيل</h2><p>اكتب الاسم والجوال، ثم حدد موقعك على الخريطة أو اكتب العنوان الوطني المختصر.</p></div>
+        <form class="kh-checkout-form" data-checkout-form>
+          <div class="kh-field"><label>الاسم الكامل</label><input name="customer_name" placeholder="مثال: محمد أحمد" required></div>
+          <div class="kh-field"><label>رقم الجوال</label><input name="customer_phone" inputmode="tel" placeholder="05xxxxxxxx" required></div>
+          <div class="kh-field"><label>البريد الإلكتروني</label><input name="customer_email" type="email" placeholder="name@email.com" required></div>
+          <div class="kh-field"><label>العنوان الوطني المختصر</label><input name="short_address" placeholder="مثال: RRRD1234" required></div>
+          <div class="kh-field kh-field-wide"><label>ملاحظات التوصيل</label><textarea name="address_notes" rows="3" placeholder="المدينة، الحي، رقم المبنى أو أي ملاحظة مهمة"></textarea></div>
+          <div class="kh-map-card kh-field-wide"><div class="kh-map-actions"><button class="kh-secondary" type="button" data-locate>حدد موقعي الآن</button><span data-location-status>لم يتم تحديد الموقع بعد</span></div><div id="khMap" class="kh-map"></div><input type="hidden" name="lat"><input type="hidden" name="lng"></div>
+          <button class="kh-primary kh-field-wide" type="submit">الدفع وإرسال الطلب</button>
+        </form>
+      </div>
+    </section>
+    <section class="kh-section kh-reviews-section">
+      <div class="kh-shell">
+        <div class="kh-section-head compact"><h2>آراء العملاء</h2></div>
+        <div class="kh-reviews" data-reviews></div>
+        <form class="kh-review-form" data-review-form>
+          <h3>أضف تقييمك</h3>
+          <div class="kh-field"><label>اسمك</label><input name="review_name" placeholder="مثال: أبو ناصر"></div>
+          <div class="kh-field"><label>تقييمك</label><textarea name="review_text" rows="3" placeholder="اكتب رأيك بالمنتج"></textarea></div>
+          <button class="kh-secondary" type="submit">إضافة التقييم</button>
+        </form>
+      </div>
+    </section>
+  </main>  <aside class="kh-cart" data-cart>
+    <div class="kh-cart-head"><h2>السلة</h2><button class="kh-close" type="button" data-close-cart>إغلاق</button></div>
+    <div data-cart-items></div>
+    <div class="kh-cart-total"><span>الإجمالي</span><strong data-cart-total>0 ريال</strong></div>
+    <a class="kh-primary" href="product.html#checkout" data-go-checkout>إكمال الطلب</a>
+  </aside>
+  <div class="kh-toast" data-toast></div>  <footer class="kh-footer">
+    <div class="kh-shell kh-footer-grid">
+      <div><img src="assets/khatafah-wordmark.png" alt="خطفة" class="kh-footer-logo"><p>خطفة متجر منتجات مختارة بعناية وتجربة طلب واضحة وآمنة.</p></div>
+      <div><h3>خدمة العملاء</h3><a href="https://wa.me/message/WO2BHOEL77CGM1">واتساب</a><a href="mailto:support@khatafa.store">البريد الإلكتروني</a></div>
+      <div><h3>طرق الدفع</h3><div class="kh-payments"><img src="assets/payment-icons/mada.png" alt="mada"><img src="assets/payment-icons/visa.png" alt="Visa"><img src="assets/payment-icons/mastercard.png" alt="Mastercard"><img src="assets/payment-icons/apple-pay.png" alt="Apple Pay"><img src="assets/payment-icons/stc-pay.png" alt="STC Pay"></div></div>
+    </div>
+  </footer>
+  <script src="store.js"></script>
+</body>
+</html>

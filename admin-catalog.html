@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+<meta name="domain-verification" content="bb8e965babe0b30d42f3680cbad632572d89e164cc1a9cb3baebf09494dede43">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="assets/header.png">
+  <title>Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª ÙˆØ§Ù„Ø¨Ù†Ø±Ø§Øª | Game Zoom</title>
+</head>
+<body>
+  <main class="admin-shell">
+    <div class="admin-top">
+      <div>
+        <h1>Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª ÙˆØ§Ù„Ø¨Ù†Ø±Ø§Øª</h1>
+        <p class="small-muted">Ù…Ù† Ù‡Ù†Ø§ ØªØ¶ÙŠÙ/ØªØ¹Ø¯Ù„/ØªØ­Ø°Ù/ØªØ®ÙÙŠ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª ÙˆØ§Ù„Ø¨Ù†Ø±Ø§Øª ÙˆØ§Ù„Ù„ÙˆØ¬Ùˆ. Ø§Ù„Ø­ÙØ¸ Ø§Ù„Ø¢Ù† Ø¯Ø§Ø®Ù„ Ø§Ù„Ù…ØªØµÙØ­ LocalStorage.</p>
+      </div>
+      <div class="support-actions">
+        <a class="btn btn-secondary" href="index.html">Ø¹Ø±Ø¶ Ø§Ù„Ù…ØªØ¬Ø±</a>
+        <button class="btn btn-primary" id="exportStoreBtn" type="button">ØªØµØ¯ÙŠØ± Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª</button>
+        <button class="btn btn-secondary" id="resetStoreBtn" type="button">Ø§Ø³ØªØ¹Ø§Ø¯Ø© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠ</button>
+      </div>
+    </div>
+
+    <div class="admin-help">
+      Ù…Ù„Ø§Ø­Ø¸Ø© Ù…Ù‡Ù…Ø©: Ù‡Ø°Ù‡ Ù„ÙˆØ­Ø© Ø¥Ø¯Ø§Ø±Ø© Ø£Ù…Ø§Ù…ÙŠØ© Ù„Ù„ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„ÙŠØ¯ÙˆÙŠ Ø§Ù„Ø³Ø±ÙŠØ¹. Ø§Ù„ØµÙˆØ± Ø§Ù„ØªÙŠ ØªØ±ÙØ¹Ù‡Ø§ ØªØ­ÙØ¸ Ø¯Ø§Ø®Ù„ Ø§Ù„Ù…ØªØµÙØ­ØŒ ÙˆÙ„Ø¬Ø¹Ù„Ù‡Ø§ ØªØ¸Ù‡Ø± Ù„ÙƒÙ„ Ø§Ù„Ø²ÙˆØ§Ø± Ù„Ø§Ø²Ù… Ù„Ø§Ø­Ù‚Ù‹Ø§ Ù†Ø±Ø¨Ø·Ù‡Ø§ Ø¨Ù‚Ø§Ø¹Ø¯Ø© Ø¨ÙŠØ§Ù†Ø§Øª/Ù„ÙˆØ­Ø© Ø®Ù„ÙÙŠØ© Ø£Ùˆ ØªØ±ÙØ¹ Ø§Ù„ØµÙˆØ± Ø¯Ø§Ø®Ù„ Ù…Ø¬Ù„Ø¯ assets ÙˆØªØ¶Ø¹ Ø±Ø§Ø¨Ø·Ù‡Ø§.
+    </div>
+
+    <section class="admin-layout">
+      <div class="admin-card">
+        <h2>Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø¹Ø§Ù…Ø©</h2>
+        <label>Ø´Ø¹Ø§Ø± Ø§Ù„Ù…ØªØ¬Ø±</label>
+        <input type="file" id="logoUpload" accept="image/*">
+        <img id="logoPreview" class="image-preview" alt="Ù…Ø¹Ø§ÙŠÙ†Ø© Ø§Ù„Ø´Ø¹Ø§Ø±">
+        <label>Ø¨Ù†Ø± Ø§Ù„ØµÙØ­Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</label>
+        <input type="file" id="heroUpload" accept="image/*">
+        <img id="heroPreview" class="image-preview" alt="Ù…Ø¹Ø§ÙŠÙ†Ø© Ø§Ù„Ø¨Ù†Ø±">
+        <label>Ø¹Ù†ÙˆØ§Ù† Ø§Ù„Ø¨Ù†Ø±</label>
+        <input id="heroTitle">
+        <label>ÙˆØµÙ Ø§Ù„Ø¨Ù†Ø±</label>
+        <input id="heroSubtitle">
+        <label>Ø±Ø§Ø¨Ø· Ø§Ù„Ø¨Ù†Ø±</label>
+        <input id="heroLink">
+        <div class="form-grid">
+          <div><label>ÙˆØ«ÙŠÙ‚Ø© Ø§Ù„Ø¹Ù…Ù„ Ø§Ù„Ø­Ø±</label><input id="freelanceDoc"></div>
+          <div><label>ØªÙˆØ«ÙŠÙ‚ Ù…Ù†ØµØ© Ø§Ù„Ø£Ø¹Ù…Ø§Ù„</label><input id="businessVerify"></div>
+        </div>
+        <button class="btn btn-primary full" id="saveGeneralBtn">Ø­ÙØ¸ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª</button>
+      </div>
+
+      <div class="admin-card">
+        <h2>Ø§Ù„Ø£Ù‚Ø³Ø§Ù…</h2>
+        <div class="form-grid">
+          <input id="catId" placeholder="Ù…Ø¹Ø±Ù Ø§Ù„Ù‚Ø³Ù… Ù…Ø«Ù„ fc27">
+          <input id="catName" placeholder="Ø§Ø³Ù… Ø§Ù„Ù‚Ø³Ù…">
+        </div>
+        <input id="catDesc" placeholder="ÙˆØµÙ Ø§Ù„Ù‚Ø³Ù…">
+        <input id="catLink" placeholder="Ø±Ø§Ø¨Ø· Ø§Ù„Ù‚Ø³Ù…">
+        <label>ØµÙˆØ±Ø© Ø¨Ù†Ø± Ø§Ù„Ù‚Ø³Ù…</label>
+        <input type="file" id="catImageUpload" accept="image/*">
+        <img id="catPreview" class="image-preview" alt="Ù…Ø¹Ø§ÙŠÙ†Ø© Ø§Ù„Ù‚Ø³Ù…">
+        <label><input type="checkbox" id="catVisible" checked style="width:auto"> Ø¸Ø§Ù‡Ø± ÙÙŠ Ø§Ù„Ù…ØªØ¬Ø±</label>
+        <button class="btn btn-primary full" id="saveCatBtn">Ø­ÙØ¸/Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù‚Ø³Ù…</button>
+        <div id="categoriesAdminList" class="admin-list" style="margin-top:16px"></div>
+      </div>
+    </section>
+
+    <section class="admin-card" style="margin-top:18px">
+      <h2>Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª</h2>
+      <div class="form-grid">
+        <input id="prodId" placeholder="Ù…Ø¹Ø±Ù Ø§Ù„Ù…Ù†ØªØ¬">
+        <select id="prodCategory"></select>
+      </div>
+      <input id="prodName" placeholder="Ø§Ø³Ù… Ø§Ù„Ù…Ù†ØªØ¬">
+      <textarea id="prodDesc" placeholder="ÙˆØµÙ Ø§Ù„Ù…Ù†ØªØ¬"></textarea>
+      <div class="form-grid">
+        <input id="prodPrice" type="number" placeholder="Ø§Ù„Ø³Ø¹Ø±">
+        <input id="prodLink" placeholder="Ø±Ø§Ø¨Ø· Ø§Ù„ØªÙØ§ØµÙŠÙ„">
+      </div>
+      <input id="prodOptions" placeholder="Ø§Ù„Ø®ÙŠØ§Ø±Ø§ØªØŒ Ø§ÙØµÙ„ Ø¨ÙŠÙ†Ù‡Ø§ Ø¨ÙÙˆØ§ØµÙ„">
+      <label>ØµÙˆØ±Ø© Ø§Ù„Ù…Ù†ØªØ¬</label>
+      <input type="file" id="prodImageUpload" accept="image/*">
+      <img id="prodPreview" class="image-preview" alt="Ù…Ø¹Ø§ÙŠÙ†Ø© Ø§Ù„Ù…Ù†ØªØ¬">
+      <label><input type="checkbox" id="prodVisible" checked style="width:auto"> Ø¸Ø§Ù‡Ø± ÙÙŠ Ø§Ù„Ù…ØªØ¬Ø±</label>
+      <button class="btn btn-primary full" id="saveProdBtn">Ø­ÙØ¸/Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ù†ØªØ¬</button>
+      <div id="productsAdminList" class="admin-list" style="margin-top:16px"></div>
+    </section>
+
+    <textarea id="exportBox" style="display:none;margin-top:18px;min-height:180px"></textarea>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+    const fileToDataUrl = (input, cb) => {
+      const file = input.files && input.files[0];
+      if (!file) return cb(null);
+      const reader = new FileReader();
+      reader.onload = () => cb(reader.result);
+      reader.readAsDataURL(file);
+    };
+    let adminStore = gzLoadStore();
+    let catImage = '';
+    let prodImage = '';
+    let logoImage = '';
+    let heroImage = '';
+
+    function fillAdmin() {
+      adminStore = gzLoadStore();
+      document.getElementById('logoPreview').src = adminStore.logo;
+      document.getElementById('heroPreview').src = adminStore.hero.image;
+      document.getElementById('heroTitle').value = adminStore.hero.title || '';
+      document.getElementById('heroSubtitle').value = adminStore.hero.subtitle || '';
+      document.getElementById('heroLink').value = adminStore.hero.link || '';
+      document.getElementById('freelanceDoc').value = adminStore.verifications.freelance || '';
+      document.getElementById('businessVerify').value = adminStore.verifications.business || '';
+      document.getElementById('prodCategory').innerHTML = adminStore.categories.map(c=>`<option value="${gzEscape(c.id)}">${gzEscape(c.name)}</option>`).join('');
+      renderAdminLists();
+    }
+
+    function renderAdminLists() {
+      document.getElementById('categoriesAdminList').innerHTML = adminStore.categories.map(c => `
+        <div class="admin-row">
+          <div><strong>${gzEscape(c.name)}</strong><small>${gzEscape(c.id)} â€” ${c.visible ? 'Ø¸Ø§Ù‡Ø±' : 'Ù…Ø®ÙÙŠ'}</small></div>
+          <div class="admin-row-actions">
+            <button onclick="editCat('${c.id}')">ØªØ¹Ø¯ÙŠÙ„</button>
+            <button class="danger-btn" onclick="deleteCat('${c.id}')">Ø­Ø°Ù</button>
+          </div>
+        </div>`).join('');
+      document.getElementById('productsAdminList').innerHTML = adminStore.products.map(p => `
+        <div class="admin-row">
+          <div><strong>${gzEscape(p.name)}</strong><small>${gzEscape(p.id)} â€” ${gzMoney(p.price)} â€” ${p.visible ? 'Ø¸Ø§Ù‡Ø±' : 'Ù…Ø®ÙÙŠ'}</small></div>
+          <div class="admin-row-actions">
+            <button onclick="editProd('${p.id}')">ØªØ¹Ø¯ÙŠÙ„</button>
+            <button class="danger-btn" onclick="deleteProd('${p.id}')">Ø­Ø°Ù</button>
+          </div>
+        </div>`).join('');
+    }
+
+    document.getElementById('logoUpload').addEventListener('change', e => fileToDataUrl(e.target, val => { if(val) { logoImage = val; document.getElementById('logoPreview').src = val; } }));
+    document.getElementById('heroUpload').addEventListener('change', e => fileToDataUrl(e.target, val => { if(val) { heroImage = val; document.getElementById('heroPreview').src = val; } }));
+    document.getElementById('catImageUpload').addEventListener('change', e => fileToDataUrl(e.target, val => { if(val) { catImage = val; document.getElementById('catPreview').src = val; } }));
+    document.getElementById('prodImageUpload').addEventListener('change', e => fileToDataUrl(e.target, val => { if(val) { prodImage = val; document.getElementById('prodPreview').src = val; } }));
+
+    document.getElementById('saveGeneralBtn').addEventListener('click', () => {
+      adminStore.logo = logoImage || adminStore.logo;
+      adminStore.hero.image = heroImage || adminStore.hero.image;
+      adminStore.hero.title = document.getElementById('heroTitle').value;
+      adminStore.hero.subtitle = document.getElementById('heroSubtitle').value;
+      adminStore.hero.link = document.getElementById('heroLink').value || '#products';
+      adminStore.verifications.freelance = document.getElementById('freelanceDoc').value;
+      adminStore.verifications.business = document.getElementById('businessVerify').value;
+      gzSaveStore(adminStore); alert('ØªÙ… Ø­ÙØ¸ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª'); fillAdmin();
+    });
+
+    document.getElementById('saveCatBtn').addEventListener('click', () => {
+      const id = document.getElementById('catId').value.trim();
+      if (!id) return alert('Ø§ÙƒØªØ¨ Ù…Ø¹Ø±Ù Ø§Ù„Ù‚Ø³Ù…');
+      const c = {
+        id,
+        name: document.getElementById('catName').value || id,
+        desc: document.getElementById('catDesc').value,
+        link: document.getElementById('catLink').value || `category.html?cat=${id}`,
+        image: catImage || document.getElementById('catPreview').src || 'assets/banner.png',
+        visible: document.getElementById('catVisible').checked
+      };
+      const i = adminStore.categories.findIndex(x=>x.id===id);
+      if (i >= 0) adminStore.categories[i] = c; else adminStore.categories.push(c);
+      gzSaveStore(adminStore); catImage=''; clearCatForm(); fillAdmin();
+    });
+
+    document.getElementById('saveProdBtn').addEventListener('click', () => {
+      const id = document.getElementById('prodId').value.trim();
+      if (!id) return alert('Ø§ÙƒØªØ¨ Ù…Ø¹Ø±Ù Ø§Ù„Ù…Ù†ØªØ¬');
+      const p = {
+        id,
+        category: document.getElementById('prodCategory').value,
+        name: document.getElementById('prodName').value || id,
+        desc: document.getElementById('prodDesc').value,
+        price: Number(document.getElementById('prodPrice').value || 0),
+        link: document.getElementById('prodLink').value || `product-detail.html?id=${id}`,
+        options: document.getElementById('prodOptions').value,
+        image: prodImage || document.getElementById('prodPreview').src || 'assets/banner.png',
+        visible: document.getElementById('prodVisible').checked
+      };
+      const i = adminStore.products.findIndex(x=>x.id===id);
+      if (i >= 0) adminStore.products[i] = p; else adminStore.products.push(p);
+      gzSaveStore(adminStore); prodImage=''; clearProdForm(); fillAdmin();
+    });
+
+    window.editCat = (id) => {
+      const c = adminStore.categories.find(x=>x.id===id); if(!c) return;
+      catImage = c.image;
+      document.getElementById('catId').value = c.id;
+      document.getElementById('catName').value = c.name;
+      document.getElementById('catDesc').value = c.desc || '';
+      document.getElementById('catLink').value = c.link || '';
+      document.getElementById('catVisible').checked = !!c.visible;
+      document.getElementById('catPreview').src = c.image;
+    };
+    window.deleteCat = (id) => {
+      if(!confirm('Ø­Ø°Ù Ø§Ù„Ù‚Ø³Ù…ØŸ')) return;
+      adminStore.categories = adminStore.categories.filter(x=>x.id!==id);
+      gzSaveStore(adminStore); fillAdmin();
+    };
+    window.editProd = (id) => {
+      const p = adminStore.products.find(x=>x.id===id); if(!p) return;
+      prodImage = p.image;
+      document.getElementById('prodId').value = p.id;
+      document.getElementById('prodCategory').value = p.category;
+      document.getElementById('prodName').value = p.name;
+      document.getElementById('prodDesc').value = p.desc || '';
+      document.getElementById('prodPrice').value = p.price || 0;
+      document.getElementById('prodLink').value = p.link || '';
+      document.getElementById('prodOptions').value = p.options || '';
+      document.getElementById('prodVisible').checked = !!p.visible;
+      document.getElementById('prodPreview').src = p.image;
+    };
+    window.deleteProd = (id) => {
+      if(id === 'rocket-rank') return alert('Ù…Ù†ØªØ¬ Rocket League Ø§Ù„Ø£Ø³Ø§Ø³ÙŠ Ù…Ø­Ù…ÙŠ Ù…Ù† Ø§Ù„Ø­Ø°Ù Ø­Ø³Ø¨ Ø·Ù„Ø¨Ùƒ. ØªÙ‚Ø¯Ø± ØªØ®ÙÙŠÙ‡ Ø£Ùˆ ØªØ¹Ø¯Ù„ Ø¹Ø±Ø¶Ù‡ Ù…Ù† Ø§Ù„ÙƒÙˆØ¯ Ù„Ø§Ø­Ù‚Ù‹Ø§.');
+      if(!confirm('Ø­Ø°Ù Ø§Ù„Ù…Ù†ØªØ¬ØŸ')) return;
+      adminStore.products = adminStore.products.filter(x=>x.id!==id);
+      gzSaveStore(adminStore); fillAdmin();
+    };
+    function clearCatForm() { ['catId','catName','catDesc','catLink'].forEach(id=>document.getElementById(id).value=''); document.getElementById('catPreview').removeAttribute('src'); document.getElementById('catVisible').checked=true; }
+    function clearProdForm() { ['prodId','prodName','prodDesc','prodPrice','prodLink','prodOptions'].forEach(id=>document.getElementById(id).value=''); document.getElementById('prodPreview').removeAttribute('src'); document.getElementById('prodVisible').checked=true; }
+    document.getElementById('resetStoreBtn').addEventListener('click', () => { if(confirm('Ø§Ø³ØªØ¹Ø§Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ©ØŸ')) { localStorage.removeItem(GZ_STORE_KEY); fillAdmin(); } });
+    document.getElementById('exportStoreBtn').addEventListener('click', () => {
+      const box = document.getElementById('exportBox');
+      box.style.display='block'; box.value = JSON.stringify(gzLoadStore(), null, 2); box.select();
+    });
+    fillAdmin();
+  </script>
+</body>
+</html>
