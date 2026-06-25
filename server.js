@@ -13,6 +13,7 @@ import Database from 'better-sqlite3';
 import { Resend } from 'resend';
 import fs from 'fs';
 import crypto from 'crypto';
+import { spawnSync } from 'child_process';
 
 // Load configurations
 dotenv.config();
@@ -23,9 +24,188 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const UPDATES_ROOT = path.join(__dirname, 'updates');
+const UPDATES_QUEUE_DIR = path.join(UPDATES_ROOT, 'queue');
+const UPDATES_APPLIED_DIR = path.join(UPDATES_ROOT, 'applied');
+const UPDATES_TEMP_DIR = path.join(UPDATES_ROOT, 'temp');
+const UPDATES_HISTORY_FILE = path.join(UPDATES_ROOT, 'history.json');
 
 // Initialize SQLite database
 const db = new Database('gamezoom.db');
+
+function ensureDirectory(dirPath) {
+  fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function readJsonFile(filePath, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJsonFile(filePath, value) {
+  fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function sanitizeArchiveName(name = 'update.zip') {
+  const base = String(name).replace(/[/\\]+/g, '_').replace(/[^\w.\-]+/g, '_').replace(/^_+/, '').trim();
+  return base.toLowerCase().endsWith('.zip') ? base : `${base || 'update'}.zip`;
+}
+
+function isBlockedUpdateSegment(segment) {
+  return ['.git', 'node_modules', 'updates'].includes(String(segment || '').toLowerCase());
+}
+
+function extractDataUrlBase64(value = '') {
+  const text = String(value || '');
+  const match = text.match(/^data:[^;]+;base64,(.+)$/s);
+  return match ? match[1] : text;
+}
+
+function ensureUpdateWorkspace() {
+  [UPDATES_ROOT, UPDATES_QUEUE_DIR, UPDATES_APPLIED_DIR, UPDATES_TEMP_DIR].forEach(ensureDirectory);
+  if (!fs.existsSync(UPDATES_HISTORY_FILE)) {
+    writeJsonFile(UPDATES_HISTORY_FILE, []);
+  }
+}
+
+function readUpdateHistory() {
+  const history = readJsonFile(UPDATES_HISTORY_FILE, []);
+  return Array.isArray(history) ? history : [];
+}
+
+function recordUpdateHistory(entry) {
+  const history = readUpdateHistory();
+  history.unshift(entry);
+  writeJsonFile(UPDATES_HISTORY_FILE, history.slice(0, 25));
+}
+
+function listZipCandidates(dirPath) {
+  if (!fs.existsSync(dirPath)) return [];
+  return fs.readdirSync(dirPath)
+    .filter(file => file.toLowerCase().endsWith('.zip'))
+    .map(file => path.join(dirPath, file));
+}
+
+function runZipExtraction(zipPath, destinationPath) {
+  const attempts = [];
+  const isWindows = process.platform === 'win32';
+
+  if (isWindows) {
+    const result = spawnSync('powershell', [
+      '-NoProfile',
+      '-Command',
+      '$zip=$env:ZIP_PATH; $dest=$env:ZIP_DEST; Expand-Archive -LiteralPath $zip -DestinationPath $dest -Force'
+    ], {
+      env: { ...process.env, ZIP_PATH: zipPath, ZIP_DEST: destinationPath },
+      encoding: 'utf8'
+    });
+    if (result.status === 0) return;
+    attempts.push(result.error?.message || result.stderr || result.stdout || 'Expand-Archive failed');
+  }
+
+  const commands = [
+    ['unzip', ['-oq', zipPath, '-d', destinationPath]],
+    ['python3', ['-c', 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])', zipPath, destinationPath]],
+    ['python', ['-c', 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])', zipPath, destinationPath]],
+    ['tar', ['-xf', zipPath, '-C', destinationPath]]
+  ];
+
+  for (const [command, args] of commands) {
+    const result = spawnSync(command, args, { encoding: 'utf8' });
+    if (result.status === 0) return;
+    attempts.push(result.error?.message || result.stderr || result.stdout || `${command} failed`);
+  }
+
+  throw new Error(`تعذر فك حزمة التحديث: ${attempts.filter(Boolean).join(' | ')}`);
+}
+
+function resolveArchiveRoot(extractDir) {
+  const entries = fs.readdirSync(extractDir, { withFileTypes: true })
+    .filter(entry => entry.name !== '__MACOSX');
+  if (entries.length === 1 && entries[0].isDirectory()) {
+    return path.join(extractDir, entries[0].name);
+  }
+  return extractDir;
+}
+
+function copyDirectoryContents(sourceDir, destinationDir, stats) {
+  for (const entry of fs.readdirSync(sourceDir, { withFileTypes: true })) {
+    if (isBlockedUpdateSegment(entry.name)) continue;
+    const sourcePath = path.join(sourceDir, entry.name);
+    const destinationPath = path.join(destinationDir, entry.name);
+    const relative = path.relative(__dirname, destinationPath).split(path.sep);
+    if (relative.some(isBlockedUpdateSegment)) continue;
+
+    if (entry.isDirectory()) {
+      ensureDirectory(destinationPath);
+      copyDirectoryContents(sourcePath, destinationPath, stats);
+    } else if (entry.isFile()) {
+      ensureDirectory(path.dirname(destinationPath));
+      fs.copyFileSync(sourcePath, destinationPath);
+      stats.filesCopied += 1;
+      stats.files.push(path.relative(__dirname, destinationPath).replaceAll(path.sep, '/'));
+    }
+  }
+}
+
+function applyUpdateArchive(archivePath, archiveName) {
+  const extractionId = `${Date.now()}-${crypto.randomUUID()}`;
+  const extractionDir = path.join(UPDATES_TEMP_DIR, extractionId);
+  ensureDirectory(extractionDir);
+
+  try {
+    runZipExtraction(archivePath, extractionDir);
+    const sourceRoot = resolveArchiveRoot(extractionDir);
+    const stats = { filesCopied: 0, files: [] };
+    copyDirectoryContents(sourceRoot, __dirname, stats);
+    const appliedArchiveName = sanitizeArchiveName(archiveName || path.basename(archivePath));
+    const appliedArchivePath = path.join(UPDATES_APPLIED_DIR, `${Date.now()}-${appliedArchiveName}`);
+    fs.renameSync(archivePath, appliedArchivePath);
+
+    const requiresRestart = stats.files.some(file => ['server.js', 'package.json', 'package-lock.json'].includes(path.basename(file).toLowerCase()));
+    recordUpdateHistory({
+      archiveName: appliedArchiveName,
+      appliedAt: new Date().toISOString(),
+      filesCopied: stats.filesCopied,
+      requiresRestart,
+      status: 'applied'
+    });
+
+    return {
+      archiveName: appliedArchiveName,
+      filesCopied: stats.filesCopied,
+      requiresRestart
+    };
+  } finally {
+    fs.rmSync(extractionDir, { recursive: true, force: true });
+  }
+}
+
+function bootstrapQueuedUpdates() {
+  const queue = listZipCandidates(UPDATES_QUEUE_DIR);
+  const results = [];
+  for (const archivePath of queue) {
+    try {
+      results.push(applyUpdateArchive(archivePath, path.basename(archivePath)));
+    } catch (error) {
+      recordUpdateHistory({
+        archiveName: path.basename(archivePath),
+        appliedAt: new Date().toISOString(),
+        filesCopied: 0,
+        requiresRestart: false,
+        status: 'failed',
+        error: error.message
+      });
+    }
+  }
+  return results;
+}
+
+ensureUpdateWorkspace();
+bootstrapQueuedUpdates();
 
 // Ensure database tables
 db.exec(`
@@ -278,8 +458,8 @@ app.use('/api/', generalLimiter);
 app.set('trust proxy', 1);
 
 // Body Parsers
-app.use(express.json({ limit: '12mb' }));
-app.use(express.urlencoded({ extended: true, limit: '12mb' }));
+app.use(express.json({ limit: '40mb' }));
+app.use(express.urlencoded({ extended: true, limit: '40mb' }));
 
 // Endpoint to save base64 logo received from client to assets/logo.png
 app.post('/api/save-logo', (req, res) => {
@@ -1689,6 +1869,7 @@ function adminStorePayload() {
     categories: db.prepare('SELECT * FROM store_categories ORDER BY sort_order, id').all(),
     banners: db.prepare('SELECT * FROM store_banners ORDER BY sort_order, id').all(),
     products: db.prepare('SELECT * FROM store_products ORDER BY id DESC').all().map(mapStoreProduct),
+    updates: readUpdateHistory(),
     shop_orders: db.prepare('SELECT * FROM shop_orders ORDER BY id DESC LIMIT 100').all().map(order => ({
       ...order,
       items: (() => {
@@ -1718,6 +1899,35 @@ app.post('/api/admin/store/settings', requireAdmin, (req, res) => {
     res.json({ success: true, settings: getStoreSettings() });
   } catch (error) {
     res.status(500).json({ error: 'ØªØ¹Ø°Ø± Ø­ÙØ¸ Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ù…ØªØ¬Ø±.' });
+  }
+});
+
+app.post('/api/admin/store/updates', requireAdmin, (req, res) => {
+  try {
+    const archiveName = sanitizeArchiveName(req.body?.archive_name || 'site-update.zip');
+    const archiveData = extractDataUrlBase64(req.body?.archive_data || '');
+    if (!archiveData) {
+      return res.status(400).json({ error: 'ملف ZIP للتحديث مطلوب.' });
+    }
+
+    const archiveBuffer = Buffer.from(archiveData, 'base64');
+    if (!archiveBuffer.length) {
+      return res.status(400).json({ error: 'ملف التحديث فارغ أو غير صالح.' });
+    }
+
+    const queuedArchivePath = path.join(UPDATES_QUEUE_DIR, `${Date.now()}-${archiveName}`);
+    fs.writeFileSync(queuedArchivePath, archiveBuffer);
+
+    const updateResult = applyUpdateArchive(queuedArchivePath, archiveName);
+    res.json({
+      success: true,
+      message: 'تم تطبيق التحديث بنجاح.',
+      update: updateResult,
+      updates: readUpdateHistory()
+    });
+  } catch (error) {
+    console.error('Admin update package error:', error);
+    res.status(500).json({ error: error.message || 'تعذر تطبيق ملف التحديث.' });
   }
 });
 

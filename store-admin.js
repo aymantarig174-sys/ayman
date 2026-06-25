@@ -1,6 +1,6 @@
 const ADMIN_API_BASE = location.hostname.endsWith('pages.dev') ? 'https://gamezoom-54hb.onrender.com' : '';
 let adminPassword = sessionStorage.getItem('gz_admin_password') || '';
-let adminData = { settings: {}, categories: [], banners: [], products: [], shop_orders: [] };
+let adminData = { settings: {}, categories: [], banners: [], products: [], shop_orders: [], updates: [] };
 
 function esc(value = '') {
   return String(value)
@@ -37,6 +37,53 @@ async function loadAdminData() {
   const result = await adminApi('/api/admin/storefront');
   adminData = result;
   renderAll();
+}
+
+function ensureUpdatesUI() {
+  if (document.querySelector('[data-tab="updates"]')) return;
+
+  const tabs = document.querySelector('.admin-tabs');
+  const ordersTab = tabs?.querySelector('[data-tab="orders"]');
+  if (tabs) {
+    const updatesTab = document.createElement('button');
+    updatesTab.className = 'admin-tab';
+    updatesTab.dataset.tab = 'updates';
+    updatesTab.type = 'button';
+    updatesTab.textContent = 'التحديثات';
+    tabs.insertBefore(updatesTab, ordersTab || null);
+  }
+
+  const ordersSection = document.querySelector('[data-section="orders"]');
+  if (!ordersSection || !ordersSection.parentNode) return;
+
+  const section = document.createElement('section');
+  section.className = 'admin-section';
+  section.dataset.section = 'updates';
+  section.innerHTML = `
+    <div class="admin-section-head">
+      <div>
+        <h2>التحديثات المضغوطة</h2>
+        <p>ارفع ملف ZIP يحتوي التعديلات الجديدة، وسيتم تطبيقه على الموقع مباشرة بدون فكّ يدوي.</p>
+      </div>
+    </div>
+    <div class="admin-layout">
+      <form class="admin-panel" id="updatesForm">
+        <div class="admin-field full">
+          <label>ملف التحديث ZIP</label>
+          <input type="file" accept=".zip,application/zip" data-update-archive required>
+        </div>
+        <div class="admin-field full">
+          <p class="admin-note">سيتم حفظ الأرشيف داخل مجلد <strong>updates</strong> وتطبيق محتواه على جذر الموقع مباشرة.</p>
+        </div>
+        <div class="admin-actions">
+          <button class="admin-btn" type="submit">رفع وتطبيق التحديث</button>
+        </div>
+      </form>
+      <div class="admin-list" id="updatesList"></div>
+    </div>
+  `;
+
+  ordersSection.parentNode.insertBefore(section, ordersSection);
 }
 
 function setDashboard(open) {
@@ -138,6 +185,31 @@ function renderProducts() {
   `).join('') || '<div class="admin-panel">لا توجد منتجات.</div>';
 }
 
+function renderUpdates() {
+  const list = document.getElementById('updatesList');
+  if (!list) return;
+
+  const updates = Array.isArray(adminData.updates) ? adminData.updates : [];
+  if (!updates.length) {
+    list.innerHTML = '<div class="admin-panel">لا توجد تحديثات مرفوعة بعد.</div>';
+    return;
+  }
+
+  list.innerHTML = updates.map(update => `
+    <article class="admin-item">
+      <div class="admin-thumb">${update.status === 'failed' ? '×' : 'ZIP'}</div>
+      <div>
+        <h3>${esc(update.archiveName || 'update.zip')}</h3>
+        <p>${esc(update.appliedAt || '')} · ${Number(update.filesCopied || 0).toLocaleString('ar-SA')} ملف</p>
+        <span class="admin-badge ${update.status === 'failed' ? 'off' : ''}">${update.status === 'failed' ? 'فشل' : 'تم التطبيق'}</span>
+      </div>
+      <div class="admin-item-actions">
+        ${update.requiresRestart ? '<span class="admin-badge">يحتاج إعادة تشغيل</span>' : '<span class="admin-badge">مباشر</span>'}
+      </div>
+    </article>
+  `).join('');
+}
+
 function renderOrders() {
   const list = document.getElementById('ordersList');
   list.innerHTML = adminData.shop_orders.map(order => `
@@ -152,10 +224,12 @@ function renderOrders() {
 }
 
 function renderAll() {
+  ensureUpdatesUI();
   renderSettings();
   renderCategories();
   renderBanners();
   renderProducts();
+  renderUpdates();
   renderOrders();
   bindListActions();
 }
@@ -203,6 +277,15 @@ function bindImageInputs() {
   });
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('تعذر قراءة الملف'));
+    reader.readAsDataURL(file);
+  });
+}
+
 async function submitEntity(form, type) {
   const payload = formObject(form);
   if (type === 'products') payload.options = String(payload.options || '').split(/\r?\n/).map(item => item.trim()).filter(Boolean);
@@ -220,10 +303,32 @@ function bindForms() {
   document.getElementById('categoryForm').addEventListener('submit', async event => { event.preventDefault(); await submitEntity(event.currentTarget, 'categories'); });
   document.getElementById('bannerForm').addEventListener('submit', async event => { event.preventDefault(); await submitEntity(event.currentTarget, 'banners'); });
   document.getElementById('productFormAdmin').addEventListener('submit', async event => { event.preventDefault(); await submitEntity(event.currentTarget, 'products'); });
+  document.addEventListener('submit', async event => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || form.id !== 'updatesForm') return;
+    event.preventDefault();
+    const fileInput = form.querySelector('[data-update-archive]');
+    const file = fileInput?.files?.[0];
+    if (!file) {
+      alert('اختر ملف ZIP أولاً.');
+      return;
+    }
+    const archiveData = await readFileAsDataUrl(file);
+    const result = await adminApi('/api/admin/store/updates', {
+      method: 'POST',
+      body: JSON.stringify({ archive_name: file.name, archive_data: archiveData })
+    });
+    alert(result.update?.requiresRestart
+      ? 'تم تطبيق التحديث. إذا كان الأرشيف يحتوي ملفات السيرفر، فستحتاج إعادة تشغيل الخدمة لالتقاطها.'
+      : 'تم تطبيق التحديث بنجاح.');
+    form.reset();
+    await loadAdminData();
+  });
   document.querySelectorAll('[data-reset-form]').forEach(button => button.onclick = () => resetForm(document.getElementById(button.dataset.resetForm)));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  ensureUpdatesUI();
   bindImageInputs();
   bindForms();
   document.querySelectorAll('.admin-tab').forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
