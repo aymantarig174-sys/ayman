@@ -1,0 +1,121 @@
+name: Apply uploaded update zips
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "updates/*.zip"
+      - ".github/workflows/apply-updates.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-updates:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract update archives
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import os
+          import shutil
+          import zipfile
+
+          root = Path.cwd()
+          updates_dir = root / "updates"
+          applied_dir = updates_dir / "applied"
+          temp_dir = updates_dir / ".tmp"
+          blocked_segments = {".git", ".github", "node_modules", "updates"}
+
+          def safe_name(name: str) -> str:
+              cleaned = "".join(char if char.isalnum() or char in ".-_" else "-" for char in name)
+              return cleaned.strip(".-") or "update.zip"
+
+          def safe_member(member: str) -> bool:
+              parts = Path(member).parts
+              if not parts:
+                  return False
+              if any(part in blocked_segments for part in parts):
+                  return False
+              return ".." not in parts and not Path(member).is_absolute()
+
+          def content_root(extracted_dir: Path) -> Path:
+              entries = [entry for entry in extracted_dir.iterdir() if entry.name != "__MACOSX"]
+              if len(entries) == 1 and entries[0].is_dir():
+                  return entries[0]
+              return extracted_dir
+
+          def copy_tree(source: Path, target_root: Path) -> int:
+              copied = 0
+              for current, dirs, files in os.walk(source):
+                  current_path = Path(current)
+                  rel_dir = current_path.relative_to(source)
+                  dirs[:] = [directory for directory in dirs if directory not in blocked_segments and directory != "__MACOSX"]
+                  for filename in files:
+                      if filename == ".DS_Store":
+                          continue
+                      source_file = current_path / filename
+                      rel_file = rel_dir / filename
+                      if not safe_member(str(rel_file)):
+                          continue
+                      destination = target_root / rel_file
+                      destination.parent.mkdir(parents=True, exist_ok=True)
+                      shutil.copy2(source_file, destination)
+                      copied += 1
+              return copied
+
+          applied_dir.mkdir(parents=True, exist_ok=True)
+          temp_dir.mkdir(parents=True, exist_ok=True)
+
+          archives = sorted(updates_dir.glob("*.zip"))
+          if not archives:
+              print("No root-level update ZIP files found in updates/.")
+              raise SystemExit(0)
+
+          total_copied = 0
+          for archive in archives:
+              work_dir = temp_dir / archive.stem
+              if work_dir.exists():
+                  shutil.rmtree(work_dir)
+              work_dir.mkdir(parents=True)
+
+              print(f"Applying {archive.name}...")
+              with zipfile.ZipFile(archive) as zip_file:
+                  for member in zip_file.infolist():
+                      if member.is_dir() or not safe_member(member.filename):
+                          continue
+                      zip_file.extract(member, work_dir)
+
+              copied = copy_tree(content_root(work_dir), root)
+              total_copied += copied
+              destination_archive = applied_dir / safe_name(archive.name)
+              if destination_archive.exists():
+                  destination_archive.unlink()
+              shutil.move(str(archive), destination_archive)
+              shutil.rmtree(work_dir)
+              print(f"Applied {copied} files from {archive.name}.")
+
+          shutil.rmtree(temp_dir, ignore_errors=True)
+          print(f"Finished applying {len(archives)} archive(s), copied {total_copied} file(s).")
+          PY
+
+      - name: Commit applied update files
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No update changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Apply uploaded update archives"
+          git push
