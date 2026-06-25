@@ -1,0 +1,6 @@
+diff --git a/index.html b/index.html
+--- a/index.html
++++ b/index.html
+@@ -1,6 +1,6 @@
+-الأكثر طلبا
++<!-- removed most popular label -->
