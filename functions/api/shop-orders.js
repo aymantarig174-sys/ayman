@@ -13,6 +13,8 @@ const GEIDEA_ENDPOINTS = {
   }
 };
 
+const DEFAULT_GEIDEA_PUBLIC_KEY = '9d0c21bf-4c75-46d7-9aed-07edd6cbc78f';
+
 const jsonHeaders = {
   'Content-Type': 'application/json; charset=utf-8',
   'Access-Control-Allow-Origin': '*',
@@ -32,7 +34,7 @@ function geideaConfig(env = {}) {
   const region = String(env.GEIDEA_ENV || 'ksa').toLowerCase();
   return {
     ...(GEIDEA_ENDPOINTS[region] || GEIDEA_ENDPOINTS.ksa),
-    publicKey: env.GEIDEA_PUBLIC_KEY || '',
+    publicKey: env.GEIDEA_PUBLIC_KEY || DEFAULT_GEIDEA_PUBLIC_KEY,
     apiPassword: env.GEIDEA_API_PASSWORD || '',
     currency: env.GEIDEA_CURRENCY || 'SAR'
   };
@@ -83,8 +85,8 @@ export async function onRequestPost({ request, env }) {
     }
 
     const config = geideaConfig(env);
-    if (!config.publicKey || !config.apiPassword) {
-      return json({ success: false, error: 'مفاتيح الدفع غير مضافة في إعدادات الاستضافة.' }, 500);
+    if (!config.apiPassword) {
+      return json({ success: false, error: 'Missing GEIDEA_API_PASSWORD in Cloudflare Pages settings. Add it, then redeploy.' }, 500);
     }
 
     const orderNumber = `KHS-${Date.now().toString().slice(-9)}`;
