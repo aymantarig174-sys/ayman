@@ -137,19 +137,34 @@ function getReviews() {
 function renderReviews() {
   const container = $('[data-reviews]');
   if (!container) return;
-  
+
   const reviews = getReviews();
-  
-  container.innerHTML = reviews.map(review => `
-    <div class="review-card">
-      <img src="${esc(review.image)}" alt="${esc(review.name)}" loading="lazy">
-      <div class="review-card-body">
-        <strong>${esc(review.name)}</strong>
-        <div class="review-stars">${'★'.repeat(review.rating || 5)}</div>
-        <p>${esc(review.text)}</p>
+
+  container.innerHTML = reviews.map((review) => {
+    const rating = Math.max(0, Math.min(5, Number(review.rating) || 5));
+    const stars = Array.from({ length: 5 }, (_, index) =>
+      `<span style="color:${index < rating ? '#f5c542' : 'rgba(255,255,255,0.22)'}">★</span>`
+    ).join('');
+
+    return `
+      <div class="review-card">
+        <img src="${esc(review.image)}" alt="${esc(review.name)}" loading="lazy">
+        <div class="review-card-body">
+          <strong>${esc(review.name)}</strong>
+          <div
+            class="review-stars"
+            role="img"
+            aria-label="${rating} من 5 نجوم"
+            title="${rating} من 5 نجوم"
+            style="display:flex;gap:4px;align-items:center;color:#f5c542;font-size:1rem;letter-spacing:1px;text-shadow:0 0 10px rgba(245, 197, 66, 0.25)"
+          >
+            ${stars}
+          </div>
+          <p>${esc(review.text)}</p>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // Footer Rendering
