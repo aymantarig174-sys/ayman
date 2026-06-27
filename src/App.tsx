@@ -236,7 +236,8 @@ export default function App() {
       setProducts(data);
     } catch (err: any) {
       console.error("Error fetching products:", err);
-      setError("تعذر الاتصال بقاعدة البيانات. يرجى المحاولة لاحقاً.");
+      setProducts(PRODUCTS);
+      setError(null);
     } finally {
       setIsLoading(false);
     }
