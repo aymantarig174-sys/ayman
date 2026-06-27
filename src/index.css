@@ -108,3 +108,197 @@ html.light-mode body::before {
     linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.02) 50%, transparent 100%),
     repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(0,0,0,0.03) 100px, rgba(0,0,0,0.03) 102px);
 }
+
+/* Sidebar light mode override styling */
+html.light-mode .store-sidebar {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-left: 1px solid #e2e8f0 !important;
+}
+
+html.light-mode .store-sidebar .text-white {
+  color: #0f172a !important;
+}
+
+html.light-mode .store-sidebar .text-gray-400 {
+  color: #64748b !important;
+}
+
+html.light-mode .store-sidebar .bg-\[\#111111\] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light-mode .store-sidebar .border-\[\#1f1f1f\] {
+  border-color: #e2e8f0 !important;
+}
+
+html.light-mode .store-sidebar .border-\[\#2a2a2a\] {
+  border-color: #e2e8f0 !important;
+}
+
+html.light-mode .store-sidebar .bg-green-500\/10 {
+  background-color: #dcfce7 !important;
+}
+
+html.light-mode .store-sidebar .text-green-400 {
+  color: #15803d !important;
+}
+
+html.light-mode .store-sidebar svg {
+  color: #475569 !important;
+}
+
+html.light-mode .store-sidebar svg.text-blue-500,
+html.light-mode .store-sidebar svg.text-blue-400 {
+  color: #3b82f6 !important;
+}
+
+html.light-mode .store-sidebar svg.text-green-400 {
+  color: #16a34a !important;
+}
+
+html.light-mode .store-sidebar h2,
+html.light-mode .store-sidebar h3,
+html.light-mode .store-sidebar p,
+html.light-mode .store-sidebar span {
+  color: inherit;
+}
+
+html.light-mode .store-sidebar .bg-neutral-50 {
+  background-color: #f8fafc !important;
+}
+
+html.light-mode .store-sidebar .border-neutral-200 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Ensure action buttons are readable and retain white text on color backgrounds in light mode */
+html.light-mode .bg-blue-600,
+html.light-mode .bg-blue-500,
+html.light-mode .bg-red-600,
+html.light-mode .hover\:bg-blue-700:hover,
+html.light-mode .hover\:bg-red-600:hover {
+  color: #ffffff !important;
+}
+
+html.light-mode .bg-blue-600 *,
+html.light-mode .bg-blue-500 *,
+html.light-mode .bg-red-600 *,
+html.light-mode .hover\:bg-blue-700:hover *,
+html.light-mode .hover\:bg-red-600:hover * {
+  color: #ffffff !important;
+}
+
+/* Product & Subscription Details Modal - Custom Font Scaling & High Contrast (Dark & Light) */
+.product-details-scroll-container .details-title {
+  font-size: 1.875rem; /* text-3xl */
+  line-height: 2.25rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.product-details-scroll-container .details-desc {
+  font-size: 1.05rem; /* text-base (clarified) */
+  line-height: 1.75rem;
+  font-weight: 500;
+  color: #e2e8f0 !important; /* light slate in dark mode */
+}
+
+.product-details-scroll-container .details-section-heading {
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #94a3b8 !important; /* subtle contrast */
+}
+
+.product-details-scroll-container .details-feat-item {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f1f5f9 !important; /* high clarity */
+}
+
+.product-details-scroll-container .details-rating-text {
+  color: #94a3b8 !important;
+  font-weight: 800;
+}
+
+.product-details-scroll-container .details-price-label {
+  color: #94a3b8 !important;
+  font-weight: 800;
+}
+
+.product-details-scroll-container .details-price-val {
+  color: #ffffff !important;
+  font-weight: 900;
+}
+
+.product-details-scroll-container .details-currency {
+  color: #cbd5e1 !important;
+}
+
+/* Light Mode Overrides for Details Modal */
+html.light-mode .product-details-scroll-container .details-title {
+  color: #0f172a !important;
+}
+
+html.light-mode .product-details-scroll-container .details-desc {
+  color: #1e293b !important; /* solid charcoal-slate for absolute legibility */
+  font-weight: 600;
+}
+
+html.light-mode .product-details-scroll-container .details-section-heading {
+  color: #475569 !important; /* crisp deep gray */
+}
+
+html.light-mode .product-details-scroll-container .details-feat-item {
+  color: #0f172a !important; /* maximum readability on light bg */
+  font-weight: 700;
+}
+
+html.light-mode .product-details-scroll-container .details-rating-text,
+html.light-mode .product-details-scroll-container .details-price-label {
+  color: #475569 !important;
+}
+
+html.light-mode .product-details-scroll-container .details-price-val {
+  color: #0f172a !important;
+}
+
+html.light-mode .product-details-scroll-container .details-currency {
+  color: #475569 !important;
+}
+
+/* Variants buttons styling in light mode */
+html.light-mode .product-details-scroll-container .details-variant-btn {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+html.light-mode .product-details-scroll-container .details-variant-btn:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+/* Force light mode selected variant contrast */
+html.light-mode .product-details-scroll-container .bg-white.text-black {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+/* Force light mode add-to-cart button contrast */
+html.light-mode .product-details-scroll-container .details-add-btn {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+html.light-mode .product-details-scroll-container .details-add-btn:hover {
+  background-color: #1e293b !important;
+}
+
+
+
+

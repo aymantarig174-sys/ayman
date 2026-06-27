@@ -3,7 +3,8 @@ import { CartItem, Product } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   X, ShoppingBag, Plus, Minus, Trash2, CreditCard, ShieldCheck, 
-  Smartphone, Wallet, Receipt, Award, CheckCircle2, ShoppingCart, Key
+  Smartphone, Wallet, Receipt, Award, CheckCircle2, ShoppingCart, Key,
+  Zap, Lightbulb
 } from "lucide-react";
 
 interface CartDrawerProps {
@@ -34,6 +35,9 @@ export default function CartDrawer({
   const [payMethod, setPayMethod] = useState<PaymentMethod>('applepay');
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [nationalAddress, setNationalAddress] = useState("");
+  const [shortCode, setShortCode] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [orderId, setOrderId] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -53,6 +57,7 @@ export default function CartDrawer({
         (position) => {
           setLocationName(`${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`);
           setIsLocating(false);
+          setNationalAddress(`الإحداثيات: ${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`);
         },
         () => {
           alert("تعذر تحديد الموقع. يرجى إدخال الموقع يدوياً.");
@@ -66,23 +71,25 @@ export default function CartDrawer({
   };
 
   const hasLightingProduct = cart.some(item => item.product.category === "lighting");
+  const isSubscriptionCart = cart.some(item => item.product.category === "subscriptions" || item.product.isSubscription);
+  
   const subtotal = cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-  const tax = Math.round(subtotal * 0.15); // 15% VAT
-  const shipping = hasLightingProduct ? 30 : 0;
-  const total = subtotal + tax + shipping;
+  const tax = isSubscriptionCart ? 0 : 0; // VAT 15% removed entirely
+  const shipping = isSubscriptionCart ? 0 : 30; // 30 SAR shipping for products
+  const total = isSubscriptionCart ? subtotal : subtotal + shipping;
 
   const handleNextToDetails = () => {
     if (cart.length === 0) return;
-    if (hasLightingProduct) {
-      setStep('details');
-    } else {
-      setStep('payment');
-    }
+    setStep('details');
   };
 
   const handleNextToPayment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName || !customerPhone) return;
+    if (isSubscriptionCart) {
+      if (!customerEmail) return;
+    } else {
+      if (!customerName || !customerPhone || !customerEmail) return;
+    }
     setStep('payment');
   };
 
@@ -91,9 +98,7 @@ export default function CartDrawer({
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      const generatedId = "KTF-" + Math.floor(100000 + Math.random() * 90000);
-      setOrderId(generatedId);
-      setStep('success');
+      setStep('otp');
     }, 1500);
   };
 
@@ -117,7 +122,15 @@ export default function CartDrawer({
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ items })
+        body: JSON.stringify({ 
+          items,
+          customerName: isSubscriptionCart ? "عميل اشتراكات خطفة" : customerName,
+          customerPhone: isSubscriptionCart ? "0500000000" : customerPhone,
+          customerEmail,
+          nationalAddress: isSubscriptionCart ? "اشتراك رقمي" : (nationalAddress || "غير محدد"),
+          shortCode: isSubscriptionCart ? "" : shortCode,
+          isSubscription: isSubscriptionCart
+        })
       });
       
       const data = await response.json();
@@ -128,8 +141,7 @@ export default function CartDrawer({
         return;
       }
 
-      const generatedId = "KTF-" + Math.floor(100000 + Math.random() * 90000);
-      setOrderId(generatedId);
+      setOrderId(data.orderId || "KTF-" + Math.floor(100000 + Math.random() * 90000));
       setStep('success');
       
       if (onPurchaseSuccess) {
@@ -146,6 +158,9 @@ export default function CartDrawer({
     setStep('cart');
     setCustomerName("");
     setCustomerPhone("");
+    setCustomerEmail("");
+    setNationalAddress("");
+    setShortCode("");
     setOtpCode("");
     setCardNumber("");
     setCardExpiry("");
@@ -181,12 +196,12 @@ export default function CartDrawer({
             {/* Header */}
             <div className="p-6 border-b border-[#2a2a2a] flex items-center justify-between bg-[#0b0b0b]">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 bg-white text-black rounded-xl flex items-center justify-center">
-                  <ShoppingBag className="w-5 h-5" />
+                <div className="w-10 h-10 bg-amber-500 text-black rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                  <ShoppingBag className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-white">سلة المشتريات</h2>
-                  <p className="text-xs text-[#a8a8a8] font-mono">{cart.length} منتجات مضافة</p>
+                  <h2 className="font-bold text-white text-sm md:text-base">السلة</h2>
+                  <p className="text-[11px] text-[#a8a8a8] font-mono">{cart.length} {cart.length === 1 ? "عنصر مضاف" : "عناصر مضافة"}</p>
                 </div>
               </div>
               <button
@@ -284,74 +299,111 @@ export default function CartDrawer({
               {/* DETAILS STEP */}
               {step === 'details' && (
                 <form onSubmit={handleNextToPayment} className="space-y-4">
-                  <h3 className="font-bold text-white text-base mb-4">أين نرسل طلبك؟ 📦</h3>
+                  {isSubscriptionCart ? (
+                    <>
+                      <h3 className="font-bold text-white text-base mb-4">بيانات تفعيل الاشتراك ⚡</h3>
+                      <div>
+                        <label className="block text-xs font-bold text-[#a8a8a8] mb-2">
+                          البريد الإلكتروني المخصص لتلقي الفاتورة وتفعيل الاشتراك (إجباري)
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={customerEmail}
+                          onChange={(e) => setCustomerEmail(e.target.value)}
+                          placeholder="yourname@gmail.com"
+                          className="w-full bg-[#0b0b0b] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 focus:bg-[#1a1a1a] focus:outline-none transition-all placeholder:text-[#6a6a6a]"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="font-bold text-white text-base mb-4">بيانات التوصيل الشحن 📦</h3>
 
-                  <div>
-                    <label className="block text-xs font-bold text-[#a8a8a8] mb-2">الاسم بالكامل</label>
-                    <input
-                      type="text"
-                      required
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="عبدالله محمد"
-                      className="w-full bg-[#0b0b0b] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 focus:bg-[#1a1a1a] focus:outline-none transition-all placeholder:text-[#6a6a6a]"
-                    />
-                  </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#a8a8a8] mb-2">الاسم بالكامل (إجباري)</label>
+                        <input
+                          type="text"
+                          required
+                          value={customerName}
+                          onChange={(e) => setCustomerName(e.target.value)}
+                          placeholder="عبدالله محمد"
+                          className="w-full bg-[#0b0b0b] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 focus:bg-[#1a1a1a] focus:outline-none transition-all placeholder:text-[#6a6a6a]"
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-[#a8a8a8] mb-2">رقم الجوال (السعودية)</label>
-                    <div className="relative">
-                      <input
-                        type="tel"
-                        required
-                        value={customerPhone}
-                        onChange={(e) => setCustomerPhone(e.target.value)}
-                        placeholder="501234567"
-                        className="w-full bg-[#0b0b0b] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm pr-14 font-mono text-white focus:border-blue-500 focus:bg-[#1a1a1a] focus:outline-none transition-all text-left placeholder:text-[#6a6a6a]"
-                      />
-                      <span className="absolute top-1/2 right-4 -translate-y-1/2 text-sm text-[#a8a8a8] font-mono pointer-events-none" style={{ direction: "ltr" }}>
-                        +966
-                      </span>
-                    </div>
-                  </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#a8a8a8] mb-2">رقم الجوال (إجباري)</label>
+                        <div className="relative">
+                          <input
+                            type="tel"
+                            required
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value)}
+                            placeholder="501234567"
+                            className="w-full bg-[#0b0b0b] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm pr-14 font-mono text-white focus:border-blue-500 focus:bg-[#1a1a1a] focus:outline-none transition-all text-left placeholder:text-[#6a6a6a]"
+                          />
+                          <span className="absolute top-1/2 right-4 -translate-y-1/2 text-sm text-[#a8a8a8] font-mono pointer-events-none" style={{ direction: "ltr" }}>
+                            +966
+                          </span>
+                        </div>
+                      </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-[#a8a8a8] mb-2">موقع التوصيل (الرياض، حي الياسمين...)</label>
-                    <div className="space-y-2">
-                      <input
-                        type="text"
-                        required
-                        value={locationName}
-                        onChange={(e) => setLocationName(e.target.value)}
-                        placeholder="أدخل موقع التوصيل أو استخدم الخريطة"
-                        className="w-full bg-[#0b0b0b] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 focus:bg-[#1a1a1a] focus:outline-none transition-all placeholder:text-[#6a6a6a]"
-                      />
-                      <div className="flex gap-2">
+                      <div>
+                        <label className="block text-xs font-bold text-[#a8a8a8] mb-2">البريد الإلكتروني لتلقي الفاتورة (إجباري)</label>
+                        <input
+                          type="email"
+                          required
+                          value={customerEmail}
+                          onChange={(e) => setCustomerEmail(e.target.value)}
+                          placeholder="customer@gmail.com"
+                          className="w-full bg-[#0b0b0b] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 focus:bg-[#1a1a1a] focus:outline-none transition-all placeholder:text-[#6a6a6a]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#a8a8a8] mb-2">العنوان الوطني (اختياري)</label>
+                        <input
+                          type="text"
+                          value={nationalAddress}
+                          onChange={(e) => setNationalAddress(e.target.value)}
+                          placeholder="الرياض، حي النرجس، شارع الملك فهد"
+                          className="w-full bg-[#0b0b0b] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 focus:bg-[#1a1a1a] focus:outline-none transition-all placeholder:text-[#6a6a6a]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#a8a8a8] mb-2">الرمز المختصر (اختياري)</label>
+                        <input
+                          type="text"
+                          value={shortCode}
+                          onChange={(e) => setShortCode(e.target.value)}
+                          placeholder="الرمز المختصر (مثال: 1234)"
+                          className="w-full bg-[#0b0b0b] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 focus:bg-[#1a1a1a] focus:outline-none transition-all placeholder:text-[#6a6a6a]"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-xs font-bold text-[#a8a8a8] mb-2">موقع التوصيل التلقائي</label>
                         <button
                           type="button"
                           onClick={handleLocateMe}
                           disabled={isLocating}
-                          className="flex-1 bg-[#1a1a1a] text-white border border-[#2a2a2a] py-2.5 rounded-xl text-xs font-bold hover:bg-[#242424] transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                          className="w-full bg-[#1a1a1a] text-white border border-[#2a2a2a] py-3 rounded-xl text-xs font-bold hover:bg-[#242424] transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
                         >
                           📍 {isLocating ? "جاري التحديد..." : "حدد موقعي الآن"}
                         </button>
-                        <button
-                          type="button"
-                          className="flex-1 bg-blue-600/10 text-blue-500 border border-blue-500/20 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-600/20 transition-colors flex items-center justify-center gap-1.5"
-                        >
-                          🗺️ تحديد من خريطة قوقل
-                        </button>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="bg-[#0b0b0b] border border-[#2a2a2a] p-4 rounded-2xl flex items-start gap-3 mt-6">
-                    <ShieldCheck className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h5 className="font-bold text-xs text-white">شحن آمن وسريع</h5>
-                      <p className="text-[11px] text-[#a8a8a8] leading-relaxed mt-1">منتجات الإنارة تشحن مجاناً وبسرعة فائقة لجميع مناطق المملكة عبر أفضل شركات الشحن.</p>
-                    </div>
-                  </div>
+                      <div className="bg-[#0b0b0b] border border-[#2a2a2a] p-4 rounded-2xl flex items-start gap-3 mt-6">
+                        <ShieldCheck className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                        <div>
+                          <h5 className="font-bold text-xs text-white">شحن آمن وسريع</h5>
+                          <p className="text-[11px] text-[#a8a8a8] leading-relaxed mt-1">منتجات الإنارة تشحن مجاناً وبسرعة فائقة لجميع مناطق المملكة عبر أفضل شركات الشحن.</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   <button
                     type="submit"
@@ -375,45 +427,6 @@ export default function CartDrawer({
                 <form onSubmit={handleConfirmPayment} className="space-y-6">
                   <h3 className="font-bold text-white text-base">بيانات الدفع والتأكيد 💳</h3>
 
-                  {!hasLightingProduct && (
-                    <div className="space-y-4 mb-6">
-                      <div className="bg-[#0b0b0b] border border-[#2a2a2a] p-4 rounded-2xl">
-                        <p className="text-xs text-[#a8a8a8] leading-relaxed mb-4">
-                          لإتمام تفعيل اشتراكاتك الرقمية وإرسالها لك، يرجى تزويدنا ببيانات التواصل:
-                        </p>
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-xs font-bold text-[#a8a8a8] mb-1.5">الاسم بالكامل</label>
-                            <input
-                              type="text"
-                              required
-                              value={customerName}
-                              onChange={(e) => setCustomerName(e.target.value)}
-                              placeholder="عبدالله محمد"
-                              className="w-full bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none transition-all placeholder:text-[#6a6a6a]"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold text-[#a8a8a8] mb-1.5">رقم الواتساب</label>
-                            <div className="relative">
-                              <input
-                                type="tel"
-                                required
-                                value={customerPhone}
-                                onChange={(e) => setCustomerPhone(e.target.value)}
-                                placeholder="501234567"
-                                className="w-full bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl px-4 py-2.5 text-sm pr-14 font-mono text-white focus:border-blue-500 focus:outline-none transition-all text-left placeholder:text-[#6a6a6a]"
-                              />
-                              <span className="absolute top-1/2 right-4 -translate-y-1/2 text-sm text-[#a8a8a8] font-mono pointer-events-none" style={{ direction: "ltr" }}>
-                                +966
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="p-5 bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl text-center space-y-4">
                     <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto relative">
                       <ShieldCheck className="w-6 h-6 text-white" />
@@ -435,10 +448,10 @@ export default function CartDrawer({
 
                   <button
                     type="submit"
-                    disabled={isProcessing || (!hasLightingProduct && (!customerName || !customerPhone))}
+                    disabled={isProcessing}
                     className="w-full bg-white text-black py-3.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
-                    {isProcessing ? "جاري التحقق الآمن..." : "تأكيد الدفع والمجموع"}
+                    {isProcessing ? "جاري التحقق الآمن..." : (isSubscriptionCart ? "ادفع الآن" : "تأكيد الدفع والمجموع")}
                   </button>
 
                   <button
@@ -554,24 +567,27 @@ export default function CartDrawer({
             {step !== 'success' && step !== 'otp' && cart.length > 0 && (
               <div className="p-6 border-t border-[#2a2a2a] bg-[#0b0b0b] space-y-4 shrink-0">
                 <div className="space-y-2 text-sm text-[#a8a8a8]">
-                  <div className="flex justify-between">
-                    <span>المجموع الفرعي:</span>
-                    <span className="font-bold text-white font-mono">{subtotal} ريال</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>ضريبة القيمة المضافة (15%):</span>
-                    <span className="font-bold text-white font-mono">{tax} ريال</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>رسوم الشحن والتفعيل الفوري:</span>
-                    <span className="font-bold text-white font-mono">
-                      {shipping === 0 ? "مجاني" : `${shipping} ريال`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-base font-black text-white border-t border-[#2a2a2a] pt-3 mt-1">
-                    <span>المبلغ الإجمالي:</span>
-                    <span className="text-xl font-black text-white font-mono">{total} ريال</span>
-                  </div>
+                  {isSubscriptionCart ? (
+                    <div className="flex justify-between text-base font-black text-white py-1">
+                      <span>المبلغ الإجمالي:</span>
+                      <span className="text-xl font-black text-white font-mono">{total} ريال</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between">
+                        <span>المجموع الفرعي:</span>
+                        <span className="font-bold text-white font-mono">{subtotal} ريال</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>رسوم الشحن:</span>
+                        <span className="font-bold text-white font-mono">30 ريال</span>
+                      </div>
+                      <div className="flex justify-between text-base font-black text-white border-t border-[#2a2a2a] pt-3 mt-1">
+                        <span>المبلغ الإجمالي:</span>
+                        <span className="text-xl font-black text-white font-mono">{total} ريال</span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {step === 'cart' && (
@@ -580,7 +596,7 @@ export default function CartDrawer({
                     className="w-full bg-white text-black py-3.5 rounded-xl font-bold text-sm hover:bg-gray-200 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
                     id="btn-checkout-cart"
                   >
-                    إتمام الشراء والطلب
+                    {isSubscriptionCart ? "ادفع الآن" : "إتمام الشراء والطلب"}
                   </button>
                 )}
               </div>

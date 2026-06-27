@@ -38,6 +38,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
       if (isLogin) {
         localStorage.setItem('khatfa_token', data.token);
+        localStorage.setItem('khatfa_email', email);
         onSuccess();
         onClose();
       } else {

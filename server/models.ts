@@ -19,7 +19,8 @@ const productSchema = new mongoose.Schema({
   features: [{ type: String }],
   arabicFeatures: [{ type: String }],
   rating: { type: Number, default: 5 },
-  isSubscription: { type: Boolean, default: false }
+  isSubscription: { type: Boolean, default: false },
+  salesCount: { type: Number, default: 100 }
 });
 
 productSchema.set('toJSON', {

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Product, CartItem, Category, Review } from "./types";
 import { 
   ShoppingBag, Star, Info, Moon, Sun, ArrowLeft, ArrowRight,
-  ShieldCheck, HelpCircle, Truck, Phone, Mail, Instagram, Twitter, LogOut, User
+  ShieldCheck, HelpCircle, Truck, Phone, Mail, Instagram, Twitter, LogOut, User, Menu
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import ProductCard from "./components/ProductCard";
@@ -11,6 +11,7 @@ import CartDrawer from "./components/CartDrawer";
 import ProductDetailsModal from "./components/ProductDetailsModal";
 import TermsModal from "./components/TermsModal";
 import AuthModal from "./components/AuthModal";
+import Sidebar from "./components/Sidebar";
 
 const KhatafaLogo = ({ className = "h-16" }: { className?: string }) => (
   <svg viewBox="20 0 280 90" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
@@ -59,19 +60,14 @@ const PRODUCTS: Product[] = [
       "/src/assets/images/galaxy_projector_thumbnail_1782560416265.jpg",
       "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&q=80",
       "https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=500&q=80",
-      "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=500&q=80",
-      "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=500&q=80",
-      "https://images.unsplash.com/photo-1446776811953-b23d5734c1b6?w=500&q=80",
-      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&q=80"
+      "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=500&q=80"
     ],
     variants: [
       { id: "v1", name: "24 قرص", price: 156 },
       { id: "v2", name: "12 قرص خيار (أ)", price: 130 },
       { id: "v3", name: "12 قرص خيار (ب)", price: 130 },
       { id: "v4", name: "10 أقراص", price: 120 },
-      { id: "v5", name: "6 أقراص", price: 90 },
-      { id: "v6", name: "3 أقراص خيار (أ)", price: 60 },
-      { id: "v7", name: "3 أقراص خيار (ب)", price: 60 }
+      { id: "v5", name: "6 أقراص", price: 90 }
     ],
     description: "وفرنا لكم جهاز عرض نجوم ومجرات بخيارات أقراص متعددة لأجواء هادئة ومميزة.",
     arabicDescription: "وفرنا لكم جهاز عرض نجوم ومجرات بخيارات أقراص متعددة لأجواء هادئة ومميزة.",
@@ -88,6 +84,8 @@ const PRODUCTS: Product[] = [
       "خيارات متعددة للأقراص"
     ],
     rating: 5,
+    stock: 50,
+    salesCount: 382
   },
   {
     id: "tv-lighting",
@@ -95,6 +93,7 @@ const PRODUCTS: Product[] = [
     arabicName: "الإنارة التفاعلية",
     category: "lighting",
     price: 159,
+    originalPrice: 249,
     image: "/src/assets/images/ambient_tv_lighting_1782560430963.jpg",
     description: "وفرنا لكم إضاءة خلفية تفاعلية للتلفزيون بتجربة مناسبة للأفلام والألعاب.",
     arabicDescription: "وفرنا لكم إضاءة خلفية تفاعلية للتلفزيون بتجربة مناسبة للأفلام والألعاب.",
@@ -111,6 +110,8 @@ const PRODUCTS: Product[] = [
       "مثالي لغرف الألعاب والسينما المنزلية"
     ],
     rating: 5,
+    stock: 20,
+    salesCount: 194
   },
   {
     id: "youtube-1y",
@@ -118,6 +119,7 @@ const PRODUCTS: Product[] = [
     arabicName: "اشتراك YouTube - سنة كاملة",
     category: "subscriptions",
     price: 190,
+    originalPrice: 380,
     image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&q=80",
     description: "مدة سنة كاملة، مشاهدة بدون إعلانات وتفعيل عبر الخطوات المرسلة.",
     arabicDescription: "مدة سنة كاملة، مشاهدة بدون إعلانات وتفعيل عبر الخطوات المرسلة.",
@@ -134,7 +136,9 @@ const PRODUCTS: Product[] = [
       "ضمان كامل"
     ],
     rating: 5,
-    isSubscription: true
+    isSubscription: true,
+    stock: 999,
+    salesCount: 412
   },
   {
     id: "chatgpt-vip",
@@ -142,21 +146,51 @@ const PRODUCTS: Product[] = [
     arabicName: "اشتراك ChatGPT - VIP",
     category: "subscriptions",
     price: 30,
+    originalPrice: 80,
     image: "https://images.unsplash.com/photo-1677442136019-21780efad99a?w=500&q=80",
     description: "تجربة أفضل وتفعيل سريع للوصول إلى مزايا ChatGPT المتقدمة.",
     arabicDescription: "تجربة أفضل وتفعيل سريع للوصول إلى مزايا ChatGPT المتقدمة.",
     features: [
       "وصول لنموذج ذكاء اصطناعي متقدم",
-      "دعم فني طوال مدة الاشتراك",
-      "تفعيل سريع"
+      "ردود أسرع وأكثر دقة",
+      "دعم مستمر وتحديثات"
     ],
     arabicFeatures: [
       "وصول لنموذج ذكاء اصطناعي متقدم",
-      "دعم فني طوال مدة الاشتراك",
-      "تفعيل سريع"
+      "ردود أسرع وأكثر دقة",
+      "دعم مستمر وتحديثات"
     ],
     rating: 5,
-    isSubscription: true
+    isSubscription: true,
+    stock: 999,
+    salesCount: 289
+  },
+  {
+    id: "cloud-storage",
+    name: "اشتراك Google One Cloud - سنة",
+    arabicName: "اشتراك كلاود تخزيني (Google One)",
+    category: "subscriptions",
+    price: 59,
+    originalPrice: 150,
+    image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=500&q=80",
+    description: "مساحة تخزينية سحابية ضخمة لحفظ صورك وملفاتك بأمان تام مع مشاركة عائلية سهلة.",
+    arabicDescription: "مساحة تخزينية سحابية ضخمة لحفظ صورك وملفاتك بأمان تام مع مشاركة عائلية سهلة.",
+    features: [
+      "سعة تخزينية سحابية 200 جيجابايت",
+      "نسخ احتياطي تلقائي للصور والملفات",
+      "دعم فني متميز ومباشر",
+      "إمكانية المشاركة مع 5 أفراد من عائلتك"
+    ],
+    arabicFeatures: [
+      "سعة تخزينية سحابية 200 جيجابايت",
+      "نسخ احتياطي تلقائي للصور والملفات",
+      "دعم فني متميز ومباشر",
+      "إمكانية المشاركة مع 5 أفراد من عائلتك"
+    ],
+    rating: 5,
+    isSubscription: true,
+    stock: 999,
+    salesCount: 168
   },
   {
     id: "gemini-yearly",
@@ -166,42 +200,51 @@ const PRODUCTS: Product[] = [
     price: 150,
     originalPrice: 720,
     image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=500&q=80",
-    description: "اشتراك Gemini Advanced حسب الباقة المتاحة، سنة كاملة من الخدمة.",
-    arabicDescription: "اشتراك Gemini Advanced حسب الباقة المتاحة، سنة كاملة من الخدمة.",
+    description: "اشتراك Gemini Advanced حسب الباقة المتاحة، سنة كاملة من الخدمة والمزايا الذكية المتقدمة.",
+    arabicDescription: "اشتراك Gemini Advanced حسب الباقة المتاحة، سنة كاملة من الخدمة والمزايا الذكية المتقدمة.",
     features: [
-      "Gemini Advanced",
-      "سنة كاملة",
-      "دعم بعد التفعيل"
+      "الوصول لأقوى نماذج Google Gemini 1.5 Pro",
+      "تكامل ذكي مع Gmail ومستندات Google Docs",
+      "مساعد ذكي فائق السرعة",
+      "سنة كاملة من المزايا المستمرة"
     ],
     arabicFeatures: [
-      "Gemini Advanced",
-      "سنة كاملة",
-      "دعم بعد التفعيل"
+      "الوصول لأقوى نماذج Google Gemini 1.5 Pro",
+      "تكامل ذكي مع Gmail ومستندات Google Docs",
+      "مساعد ذكي فائق السرعة",
+      "سنة كاملة من المزايا المستمرة"
     ],
     rating: 5,
-    isSubscription: true
+    isSubscription: true,
+    stock: 999,
+    salesCount: 312
   },
   {
     id: "canva-pro",
     name: "اشتراك Canva",
-    arabicName: "اشتراك Canva",
+    arabicName: "اشتراك Canva Pro",
     category: "subscriptions",
     price: 25,
+    originalPrice: 180,
     image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=500&q=80",
-    description: "مناسب للتصميم والقوالب الجاهزة مع دعم بعد التفعيل.",
-    arabicDescription: "مناسب للتصميم والقوالب الجاهزة مع دعم بعد التفعيل.",
+    description: "الوصول لجميع القوالب والتصاميم المدفوعة وإزالة الخلفيات بلمسة واحدة لعمل تصاميم احترافية.",
+    arabicDescription: "الوصول لجميع القوالب والتصاميم المدفوعة وإزالة الخلفيات بلمسة واحدة لعمل تصاميم احترافية.",
     features: [
-      "ملايين القوالب",
-      "أدوات الذكاء الاصطناعي",
-      "تصميم احترافي"
+      "ملايين القوالب والتصاميم المتميزة والخطوط الفاخرة",
+      "إزالة خلفيات الصور والفيديوهات بلمسة واحدة بذكاء",
+      "مساحة تخزين سحابية Canva Cloud لحفظ أعمالك",
+      "تحميل التصاميم بأعلى دقة وبصيغ شفافة"
     ],
     arabicFeatures: [
-      "ملايين القوالب",
-      "أدوات الذكاء الاصطناعي",
-      "تصميم احترافي"
+      "ملايين القوالب والتصاميم المتميزة والخطوط الفاخرة",
+      "إزالة خلفيات الصور والفيديوهات بلمسة واحدة بذكاء",
+      "مساحة تخزين سحابية Canva Cloud لحفظ أعمالك",
+      "تحميل التصاميم بأعلى دقة وبصيغ شفافة"
     ],
     rating: 5,
-    isSubscription: true
+    isSubscription: true,
+    stock: 999,
+    salesCount: 512
   }
 ];
 
@@ -223,6 +266,7 @@ export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('khatfa_token'));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -311,6 +355,39 @@ export default function App() {
   }, [isDarkMode]);
 
   const handleAddToCart = (product: Product) => {
+    // 1. Login constraint check
+    if (!isAuthenticated) {
+      alert("يرجى تسجيل الدخول أولاً للتمكن من إضافة المنتجات والاشتراكات للسلة وإتمام طلبك.");
+      setIsAuthOpen(true);
+      return;
+    }
+
+    // 2. Variant selection check
+    if (product.variants && product.variants.length > 1) {
+      const hasChosenVariant = product.name.includes(" - ") || product.arabicName.includes(" - ");
+      if (!hasChosenVariant) {
+        setSelectedProduct(product);
+        alert("هذا المنتج يحتوي على عدة خيارات. يرجى اختيار الخيار المفضل لديك من صفحة تفاصيل المنتج.");
+        return;
+      }
+    }
+
+    // 3. Prevent mixing of products and subscriptions in the same cart
+    const isAddingSubscription = product.category === "subscriptions" || product.isSubscription;
+    const hasProduct = cart.some(item => item.product.category !== "subscriptions" && !item.product.isSubscription);
+    const hasSubscription = cart.some(item => item.product.category === "subscriptions" || item.product.isSubscription);
+
+    if (cart.length > 0) {
+      if (isAddingSubscription && hasProduct) {
+        alert("عذراً، لا يمكن إضافة الاشتراكات والمنتجات في نفس السلة. يرجى إتمام طلب المنتجات الحالية أو تفريغ السلة أولاً.");
+        return;
+      }
+      if (!isAddingSubscription && hasSubscription) {
+        alert("عذراً، لا يمكن إضافة المنتجات والاشتراكات في نفس السلة. يرجى إتمام طلب الاشتراكات الحالية أو تفريغ السلة أولاً.");
+        return;
+      }
+    }
+
     const existingIndex = cart.findIndex((item) => item.product.id === product.id);
     if (existingIndex > -1) {
       const updated = [...cart];
@@ -365,12 +442,15 @@ export default function App() {
       <header className="sticky top-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-[#2a2a2a] px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           
-          {/* Brand Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => scrollToSection("hero")}>
-            <div className="relative flex items-center">
-              <KhatafaLogo className="h-10 text-white" />
-            </div>
-          </div>
+          {/* Sidebar Menu Button replacing the logo word */}
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="w-10 h-10 bg-[#111111] hover:bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-full transition-all duration-200 cursor-pointer shadow-md flex items-center justify-center"
+            id="sidebar-trigger"
+            title="فتح القائمة"
+          >
+            <Menu className="w-5.5 h-5.5 text-blue-500" />
+          </button>
 
           {/* Nav Links */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-bold text-[#a8a8a8]">
@@ -386,27 +466,30 @@ export default function App() {
           </nav>
 
           <div className="flex items-center gap-3">
-            {/* Auth Button */}
-            {isAuthenticated ? (
-              <button
-                onClick={() => {
-                  localStorage.removeItem('khatfa_token');
-                  setIsAuthenticated(false);
-                }}
-                className="p-2.5 bg-[#111111] border border-[#2a2a2a] text-red-400 rounded-full hover:bg-red-500/10 hover:border-red-500/50 transition-all duration-200 cursor-pointer shadow-md"
-                title="تسجيل الخروج"
-              >
-                <LogOut className="w-5.5 h-5.5" />
-              </button>
-            ) : (
-              <button
-                onClick={() => setIsAuthOpen(true)}
-                className="p-2.5 bg-blue-600 border border-blue-500 text-white rounded-full hover:bg-blue-700 transition-all duration-200 cursor-pointer shadow-md"
-                title="تسجيل الدخول"
-              >
-                <User className="w-5.5 h-5.5" />
-              </button>
-            )}
+            {/* Custom Auth / Profile Button */}
+            <button
+              onClick={() => {
+                if (isAuthenticated) {
+                  setIsSidebarOpen(true);
+                } else {
+                  setIsAuthOpen(true);
+                }
+              }}
+              className={`relative p-2 rounded-full flex items-center justify-center border-2 transition-all duration-200 cursor-pointer shadow-md w-10 h-10 ${
+                isDarkMode 
+                  ? "border-white bg-transparent text-white hover:bg-white/10" 
+                  : "border-neutral-900 bg-transparent text-neutral-900 hover:bg-neutral-900/10"
+              }`}
+              title={isAuthenticated ? "الشريط الجانبي" : "تسجيل الدخول"}
+            >
+              <User className={`w-5 h-5 ${isDarkMode ? 'text-white' : 'text-neutral-900'}`} />
+              {/* Small checkmark badge next to profile icon when logged in */}
+              {isAuthenticated && (
+                <span className="absolute -top-1 -right-1 bg-green-500 rounded-full w-4.5 h-4.5 flex items-center justify-center text-[10px] border border-black font-bold shadow-sm" style={{ color: "#ffffff" }}>
+                  ✓
+                </span>
+              )}
+            </button>
 
             {/* Theme Toggle Button */}
             <button
@@ -520,7 +603,7 @@ export default function App() {
                   src="/src/assets/images/subscriptions_badge_1782560445725.jpg" 
                   alt="الاشتراكات"
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60 group-hover:opacity-80"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-100"
                 />
               </div>
               <div>
@@ -540,13 +623,13 @@ export default function App() {
               <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-[#050505] mb-6 border border-[#2a2a2a]">
                 <img 
                   src="/src/assets/images/ambient_tv_lighting_1782560430963.jpg" 
-                  alt="الإنارة والديكور"
+                  alt="المنتجات"
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60 group-hover:opacity-80"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-100"
                 />
               </div>
               <div>
-                <h3 className="font-extrabold text-xl text-white mb-2 transition-colors">إضاءة وديكور</h3>
+                <h3 className="font-extrabold text-xl text-white mb-2 transition-colors">المنتجات</h3>
                 <p className="text-sm text-[#a8a8a8]">إضاءة تفاعلية ونجوم للمنزل</p>
               </div>
             </div>
@@ -568,7 +651,7 @@ export default function App() {
           <div className="flex flex-wrap gap-3">
             {[
               { id: "all", label: "الكل" },
-              { id: "lighting", label: "إضاءة وديكور" },
+              { id: "lighting", label: "المنتجات" },
               { id: "subscriptions", label: "الاشتراكات الرقمية" }
             ].map((tab) => (
               <button
@@ -788,6 +871,21 @@ export default function App() {
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         onSuccess={() => setIsAuthenticated(true)}
+      />
+
+      {/* Sidebar Panel for Account, My Orders, and Logout */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        isAuthenticated={isAuthenticated}
+        isDarkMode={isDarkMode}
+        onLogout={() => {
+          localStorage.removeItem("khatfa_token");
+          localStorage.removeItem("khatfa_email");
+          setIsAuthenticated(false);
+          setIsSidebarOpen(false);
+        }}
+        onOpenLogin={() => setIsAuthOpen(true)}
       />
 
       {/* Floating Arabic Smart Gemini Chatbot Widget */}

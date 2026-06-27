@@ -21,6 +21,7 @@ export interface Product {
   rating: number;
   isSubscription?: boolean;
   stock?: number;
+  salesCount?: number;
 }
 
 export interface CartItem {

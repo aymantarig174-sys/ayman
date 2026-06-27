@@ -11,7 +11,7 @@ import { Product } from "./server/models.js";
 import { SEED_PRODUCTS } from "./server/seedData.js";
 import { register, login } from "./server/controllers/authController.js";
 import { getProducts } from "./server/controllers/productController.js";
-import { buyProducts } from "./server/controllers/orderController.js";
+import { buyProducts, getMyOrders } from "./server/controllers/orderController.js";
 import { authenticateToken } from "./server/middleware/auth.js";
 
 dotenv.config();
@@ -119,11 +119,10 @@ const STORE_PRODUCTS = [
 
 // Seed Database
 async function seedDatabase() {
-  const productCount = await Product.countDocuments();
-  if (productCount === 0) {
-    await Product.insertMany(SEED_PRODUCTS);
-    console.log("Database seeded with initial products.");
-  }
+  // Clear and re-seed to ensure all products are up-to-date and have original prices, sales counts, and new cloud storage
+  await Product.deleteMany({});
+  await Product.insertMany(SEED_PRODUCTS);
+  console.log("Database seeded with fresh, up-to-date products.");
 }
 
 // API Routes
@@ -133,6 +132,7 @@ app.get("/api/products", getProducts);
 
 // Protected routes
 app.post("/api/buy", authenticateToken, buyProducts);
+app.get("/api/orders", authenticateToken, getMyOrders);
 
 // API Route for Gemini Chatbot
 app.post("/api/chat", async (req, res) => {
