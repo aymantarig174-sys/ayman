@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, LogIn, UserPlus } from 'lucide-react';
+import { loginOfflineUser, readResponseJson, registerOfflineUser } from '../lib/offlineStore';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -30,7 +31,36 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const data = await readResponseJson(response);
+      const serverUnavailable = response.status === 404 || response.status >= 500 || (!response.ok && !data) || (response.ok && !data);
+
+      if (serverUnavailable) {
+        if (isLogin) {
+          const offlineLogin = loginOfflineUser(email, password);
+          localStorage.setItem('khatfa_token', offlineLogin.token);
+          localStorage.setItem('khatfa_email', email);
+          onSuccess();
+          onClose();
+        } else {
+          const offlineRegister = registerOfflineUser(email, password);
+          if (!offlineRegister.ok) {
+            throw new Error(offlineRegister.error || 'تعذر إنشاء الحساب');
+          }
+          setIsLogin(true);
+          alert('تم إنشاء حسابك محلياً بنجاح. قم بتسجيل الدخول الآن.');
+          setPassword('');
+        }
+        return;
+      }
+
+      if (response.ok && isLogin && typeof data?.token !== 'string') {
+        const offlineLogin = loginOfflineUser(email, password);
+        localStorage.setItem('khatfa_token', offlineLogin.token);
+        localStorage.setItem('khatfa_email', email);
+        onSuccess();
+        onClose();
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'حدث خطأ غير متوقع');

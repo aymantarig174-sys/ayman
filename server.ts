@@ -36,17 +36,16 @@ const PORT = 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  console.error("MONGODB_URI environment variable is missing.");
-  process.exit(1);
+  console.warn("MONGODB_URI is missing. Running in offline mode with local file-backed data.");
+} else {
+  // Connect to MongoDB
+  mongoose.connect(MONGODB_URI)
+    .then(async () => {
+      console.log("Connected to MongoDB successfully");
+      await seedDatabase();
+    })
+    .catch((err) => console.error("MongoDB connection error:", err));
 }
-
-// Connect to MongoDB
-mongoose.connect(MONGODB_URI)
-  .then(async () => {
-    console.log("Connected to MongoDB successfully");
-    await seedDatabase();
-  })
-  .catch((err) => console.error("MongoDB connection error:", err));
 
 // Lazy initialize Gemini client to avoid crashes if API key is missing
 let aiClient: GoogleGenAI | null = null;

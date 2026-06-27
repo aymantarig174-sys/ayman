@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { X, User, ShoppingBag, LogOut, Loader2, Package, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getOfflineOrdersByEmail, readResponseJson } from "../lib/offlineStore";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -46,17 +47,23 @@ export default function Sidebar({ isOpen, onClose, isAuthenticated, onLogout, on
     setIsLoading(true);
     try {
       const token = localStorage.getItem("khatfa_token");
+      const userEmail = localStorage.getItem("khatfa_email") || "";
       const response = await fetch("/api/orders", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (response.ok) {
-        const data = await response.json();
+      const data = await readResponseJson(response);
+      if (response.ok && Array.isArray(data)) {
         setOrders(data);
+        return;
       }
+
+      setOrders(userEmail ? getOfflineOrdersByEmail(userEmail) : []);
     } catch (err) {
       console.error("Error fetching orders:", err);
+      const userEmail = localStorage.getItem("khatfa_email") || "";
+      setOrders(userEmail ? getOfflineOrdersByEmail(userEmail) : []);
     } finally {
       setIsLoading(false);
     }

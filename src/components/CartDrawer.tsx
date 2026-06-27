@@ -6,6 +6,7 @@ import {
   Smartphone, Wallet, Receipt, Award, CheckCircle2, ShoppingCart, Key,
   Zap, Lightbulb
 } from "lucide-react";
+import { readResponseJson, saveOfflineOrder } from "../lib/offlineStore";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -133,8 +134,33 @@ export default function CartDrawer({
         })
       });
       
-      const data = await response.json();
-      
+      const data = await readResponseJson(response);
+      const serverUnavailable = response.status === 404 || response.status >= 500 || (!response.ok && !data) || (response.ok && !data);
+
+      if (serverUnavailable) {
+        const offlineOrderId = "offline-ord-" + Math.floor(100000 + Math.random() * 900000);
+        const userEmail = localStorage.getItem("khatfa_email") || customerEmail || "offline@khatfa.local";
+        saveOfflineOrder({
+          id: offlineOrderId,
+          userEmail,
+          products: cart.map((item) => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+            price: item.product.price,
+            name: item.product.arabicName,
+            image: item.product.image,
+          })),
+          totalAmount: total,
+          status: "completed",
+          createdAt: new Date().toISOString(),
+        });
+
+        setOrderId(offlineOrderId);
+        setStep('success');
+        onPurchaseSuccess?.();
+        return;
+      }
+
       if (!response.ok) {
         alert(data.error || "حدث خطأ أثناء الشراء");
         setIsProcessing(false);
