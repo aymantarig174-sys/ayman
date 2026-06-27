@@ -1,0 +1,6 @@
+{
+  "name": "متجر خطفة - Khatfa Store",
+  "description": "متجر إلكتروني متكامل لبيع منتجات الإنارة التفاعلية وإضاءة النجوم والمجرات بالإضافة إلى الاشتراكات الرقمية المتنوعة بتصميم حديث ومميز.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

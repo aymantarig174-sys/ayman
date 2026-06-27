@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@theme {
+  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  direction: rtl;
+  font-family: var(--font-sans);
+  background-color: #050505;
+  color: #ffffff;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.01) 50%, transparent 100%),
+    repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(255,255,255,0.02) 100px, rgba(255,255,255,0.02) 102px);
+  pointer-events: none;
+  z-index: -1;
+  animation: speedLines 20s linear infinite;
+}
+
+@keyframes speedLines {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100px); }
+}
+
+/* Custom styles and animations */
+@keyframes pulse-subtle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.03); opacity: 0.95; }
+}
+
+.pulse-button {
+  animation: pulse-subtle 3s infinite ease-in-out;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0b0b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* Light Mode Overrides */
+html.light-mode body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.light-mode .bg-\[\#050505\] { background-color: #f8fafc !important; }
+html.light-mode .bg-\[\#0a0a0a\]\/80 { background-color: rgba(255, 255, 255, 0.8) !important; }
+html.light-mode .bg-\[\#111111\] { background-color: #ffffff !important; }
+html.light-mode .bg-\[\#1a1a1a\] { background-color: #f1f5f9 !important; }
+html.light-mode .bg-\[\#0b0b0b\] { background-color: #f1f5f9 !important; }
+
+html.light-mode .border-\[\#2a2a2a\] { border-color: #e2e8f0 !important; }
+html.light-mode .border-\[\#3a3a3a\] { border-color: #cbd5e1 !important; }
+
+html.light-mode .text-\[\#a8a8a8\] { color: #64748b !important; }
+html.light-mode .text-\[\#6a6a6a\] { color: #94a3b8 !important; }
+
+html.light-mode .text-white { color: #0f172a !important; }
+html.light-mode .text-black { color: #ffffff !important; }
+html.light-mode .bg-white { background-color: #0f172a !important; }
+html.light-mode .bg-black { background-color: #ffffff !important; }
+
+html.light-mode .hover\:bg-\[\#1a1a1a\]:hover { background-color: #f8fafc !important; }
+html.light-mode .hover\:bg-gray-200:hover { background-color: #334155 !important; }
+html.light-mode .hover\:text-white:hover { color: #0f172a !important; }
+html.light-mode .hover\:border-\[\#3a3a3a\]:hover { border-color: #cbd5e1 !important; }
+
+html.light-mode .from-white { --tw-gradient-from: #0f172a var(--tw-gradient-from-position) !important; }
+html.light-mode .to-gray-400 { --tw-gradient-to: #64748b var(--tw-gradient-to-position) !important; }
+
+html.light-mode svg.text-white { color: #0f172a !important; }
+html.light-mode svg.text-black { color: #ffffff !important; }
+
+/* Invert speed lines for light mode */
+html.light-mode body::before {
+  background-image: 
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.02) 50%, transparent 100%),
+    repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(0,0,0,0.03) 100px, rgba(0,0,0,0.03) 102px);
+}

@@ -1,32 +1,20 @@
-# Fastor Store
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
+</div>
 
-متجر فاستور الرقمي بهوية فريدة ومميزة.
+# Run and deploy your AI Studio app
 
-## التشغيل
+This contains everything you need to run your app locally.
 
-1. ثبّت الاعتماديات باستخدام `npm install`.
-2. انسخ `.env.example` إلى `.env` وأضف القيم المطلوبة.
-3. شغّل المشروع باستخدام `npm run dev`.
+View your app in AI Studio: https://ai.studio/apps/500d8aa0-86ea-4513-bc6c-acbed36714e0
 
-## صفحات المتجر
+## Run Locally
 
-- `index.html`: واجهة المتجر والأقسام والبنرات والمنتجات.
-- `category.html`: عرض منتجات القسم.
-- `store-product.html`: صفحة المنتجات الرقمية العامة.
-- `shop-cart.html`: سلة المنتجات الرقمية.
-- `account.html`: واجهة دخول العميل والتحقق التجريبي.
-- `store-admin.html`: لوحة إدارة الأقسام والبنرات والمنتجات والطلبات.
-- `product.html`: منتج Rocket League الحالي بدون تغيير.
+**Prerequisites:**  Node.js
 
-## الإدارة
 
-اضبط `ADMIN_PASSWORD` في متغيرات البيئة، ثم افتح `store-admin.html`. الصور المرفوعة من لوحة الإدارة تحفظ داخل قاعدة SQLite بصيغة Data URL.
-
-## تسجيل الدخول
-
-رمز التحقق يعمل بوضع تجريبي ويظهر في الصفحة. للإرسال الحقيقي اربط مزود SMS أو بريد، وأضف بيانات Google وApple الموجودة في `.env.example`.
-
-## صور الأقسام والبنرات
-
-أضيفت صور بنفسجية خاصة بأقسام Grand وFC 27 وRocket League داخل `assets/store-banners`.
-يستخدم الوضع الداكن الملفات المنتهية بـ `-dark.png`، ويستبدلها الموقع تلقائيًا بالملفات المنتهية بـ `-light.png` عند تشغيل الوضع الفاتح.
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
